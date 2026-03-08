@@ -1,0 +1,84 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: 202 60% 97%;
+  --fg: 214 47% 12%;
+  --card: 0 0% 100%;
+  --border: 210 26% 90%;
+  --accent: 189 85% 38%;
+  --muted: 210 18% 44%;
+  --danger: 2 84% 56%;
+}
+
+.dark {
+  --bg: 220 33% 10%;
+  --fg: 210 40% 96%;
+  --card: 221 31% 14%;
+  --border: 218 24% 24%;
+  --accent: 182 82% 44%;
+  --muted: 216 17% 66%;
+  --danger: 2 75% 61%;
+}
+
+body {
+  @apply min-h-screen bg-bg text-fg antialiased;
+  background-image: radial-gradient(circle at 0 0, rgba(43, 198, 204, 0.18), transparent 45%),
+    radial-gradient(circle at 100% 0, rgba(0, 111, 238, 0.12), transparent 30%);
+}
+
+@media (min-width: 1024px) {
+  body {
+    background-image: linear-gradient(to bottom, rgba(43, 198, 204, 0.08), transparent 35%);
+  }
+}
+
+@keyframes mix-splash-logo-fade {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+}
+
+@keyframes mix-splash-overlay-fade {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.mix-splash-overlay {
+  animation: mix-splash-overlay-fade 6s linear forwards;
+  will-change: opacity;
+}
+
+.mix-splash-logo {
+  animation: mix-splash-logo-fade 6s ease-in-out forwards;
+  will-change: opacity, transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mix-splash-overlay,
+  .mix-splash-logo {
+    animation-duration: 1ms;
+  }
+}

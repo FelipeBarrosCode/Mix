@@ -1,0 +1,25 @@
+{
+  "name": "Mix-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@9.15.0",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "pnpm --filter web dev",
+    "build": "pnpm --filter web build",
+    "start": "pnpm --filter web start",
+    "test": "pnpm --filter web test",
+    "test:watch": "pnpm --filter web test:watch",
+    "lint": "pnpm --filter web lint"
+  },
+  "pnpm": {
+    "overrides": {
+      "ws": "7.5.10",
+      "bn": {
+        "js": "4.12.3"
+      }
+    }
+  }
+}
