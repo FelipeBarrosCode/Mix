@@ -12,7 +12,7 @@ export type NetworkConfig = {
 
 const envDefaultNetwork = process.env.NEXT_PUBLIC_DEFAULT_NETWORK;
 
-export const DEFAULT_NETWORK: NetworkId = envDefaultNetwork === "mainnet" ? "mainnet" : "testnet";
+export const DEFAULT_NETWORK: NetworkId = envDefaultNetwork === "testnet" ? "testnet" : "mainnet";
 
 export const NETWORKS: Record<NetworkId, NetworkConfig> = {
   testnet: {
