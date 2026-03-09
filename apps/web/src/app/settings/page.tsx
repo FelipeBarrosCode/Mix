@@ -8,7 +8,12 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { NetworkId } from "@/lib/algorand/network";
-import { probeAlgodEndpoint, probeIndexerEndpoint, validatePublicHttpsEndpoint } from "@/lib/algorand/endpoint-validation";
+import {
+  isTrustedEndpoint,
+  probeAlgodEndpoint,
+  probeIndexerEndpoint,
+  validatePublicHttpsEndpoint,
+} from "@/lib/algorand/endpoint-validation";
 import { useNetworkStore } from "@/stores/network-store";
 import { useActiveNetworkConfig } from "@/hooks/use-active-network";
 import { AppLocale, AppRegion, fiatFromRegion, usePreferencesStore } from "@/stores/preferences-store";
@@ -19,6 +24,7 @@ export default function SettingsPage() {
   const { toast } = useToast();
   const [algodEndpoint, setAlgodEndpoint] = useState("");
   const [indexerEndpoint, setIndexerEndpoint] = useState("");
+  const [advancedMode, setAdvancedMode] = useState(false);
   const network = useNetworkStore((s) => s.network);
   const setNetwork = useNetworkStore((s) => s.setNetwork);
   const activeConfig = useActiveNetworkConfig();
@@ -36,6 +42,12 @@ export default function SettingsPage() {
       const nextIndexer = indexerEndpoint
         ? validatePublicHttpsEndpoint(indexerEndpoint, "Indexer")
         : null;
+
+      const customTargets = [nextAlgod, nextIndexer].filter((item): item is string => Boolean(item));
+      const hasUntrusted = customTargets.some((origin) => !isTrustedEndpoint(origin));
+      if (hasUntrusted && !advancedMode) {
+        throw new Error("Custom endpoint host is not in trusted list. Enable advanced mode to continue.");
+      }
 
       if (!nextAlgod && !nextIndexer) {
         toast({ title: "No endpoint changes to save" });
@@ -100,6 +112,9 @@ export default function SettingsPage() {
 
         <Card className="space-y-2">
           <p className="text-sm font-semibold">{t("settings.customEndpoints")}</p>
+          <p className="text-xs text-muted">
+            Trusted hosts: algonode.cloud and nodely.dev. Use advanced mode for any other host.
+          </p>
           <Input
             placeholder={activeConfig.algodEndpoints[0]}
             value={algodEndpoint}
@@ -110,6 +125,14 @@ export default function SettingsPage() {
             value={indexerEndpoint}
             onChange={(e) => setIndexerEndpoint(e.target.value)}
           />
+          <label className="flex items-center gap-2 text-xs text-muted">
+            <input
+              type="checkbox"
+              checked={advancedMode}
+              onChange={(e) => setAdvancedMode(e.target.checked)}
+            />
+            Advanced mode: allow non-trusted RPC hosts (higher risk)
+          </label>
           <Button
             className="w-full"
             variant="secondary"

@@ -9,6 +9,16 @@ const PRIVATE_HOST_PATTERNS = [
   /^::1$/,
 ];
 
+const TRUSTED_HOST_SUFFIXES = [
+  ".algonode.cloud",
+  ".nodely.dev",
+];
+
+const TRUSTED_HOSTS = new Set([
+  "algonode.cloud",
+  "nodely.dev",
+]);
+
 function withTimeout<T>(promise: Promise<T>, timeoutMs = 8_000): Promise<T> {
   return Promise.race([
     promise,
@@ -45,6 +55,17 @@ export function validatePublicHttpsEndpoint(raw: string, label: string): string 
   }
 
   return url.origin;
+}
+
+export function isTrustedEndpoint(origin: string): boolean {
+  try {
+    const url = new URL(origin);
+    const hostname = url.hostname.toLowerCase();
+    if (TRUSTED_HOSTS.has(hostname)) return true;
+    return TRUSTED_HOST_SUFFIXES.some((suffix) => hostname.endsWith(suffix));
+  } catch {
+    return false;
+  }
 }
 
 export async function probeAlgodEndpoint(endpoint: string) {

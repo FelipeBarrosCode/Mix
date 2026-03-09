@@ -2,6 +2,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { messages } from "@/lib/i18n/messages";
 import { I18nLocale, I18nRegion, fiatFromRegion, isLocale, isRegion, localeFromRegion, regionFromCountryCode, regionFromGeoCoordinates } from "@/lib/i18n/locale";
 
+const configuredOriginRaw = process.env.NEXT_PUBLIC_APP_ORIGIN ?? process.env.APP_ORIGIN ?? "";
+
+function normalizeOrigin(value: string): string {
+  if (!value) return "";
+  try {
+    return new URL(value).origin;
+  } catch {
+    try {
+      return new URL(`https://${value}`).origin;
+    } catch {
+      return "";
+    }
+  }
+}
+
+const configuredOrigin = normalizeOrigin(configuredOriginRaw);
+
 const helpVideoByLocale: Record<I18nLocale, string> = {
   en: "https://youtu.be/_edZbCDtTPI",
   es: "https://youtu.be/gyxkSlbem4U",
@@ -43,7 +60,43 @@ function resolveLocale(req: NextRequest, region: I18nRegion): I18nLocale {
   return localeFromAcceptLanguage(req.headers.get("accept-language"));
 }
 
+function getAllowedOrigin(req: NextRequest): string | null {
+  const origin = req.headers.get("origin");
+  if (!origin) return null;
+  const allowed = configuredOrigin || req.nextUrl.origin;
+  return origin === allowed ? origin : null;
+}
+
+function corsHeaders(allowedOrigin: string | null): Record<string, string> {
+  if (!allowedOrigin) return {};
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, X-User-Locale, X-User-Region, X-User-Geo-Lat, X-User-Geo-Lng",
+  };
+}
+
+export async function OPTIONS(req: NextRequest) {
+  const allowedOrigin = getAllowedOrigin(req);
+  if (!allowedOrigin) {
+    return new NextResponse(null, { status: 403 });
+  }
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      ...corsHeaders(allowedOrigin),
+      Vary: "Origin",
+    },
+  });
+}
+
 export async function GET(req: NextRequest) {
+  const requestOrigin = req.headers.get("origin");
+  const allowedOrigin = getAllowedOrigin(req);
+  if (requestOrigin && !allowedOrigin) {
+    return NextResponse.json({ error: "origin_not_allowed" }, { status: 403, headers: { Vary: "Origin" } });
+  }
+
   const region = resolveRegion(req);
   const locale = resolveLocale(req, region);
   return NextResponse.json(
@@ -56,8 +109,9 @@ export async function GET(req: NextRequest) {
     },
     {
       headers: {
+        ...corsHeaders(allowedOrigin),
         "Cache-Control": "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400",
-        Vary: "Accept-Language, X-User-Locale, X-User-Region, X-User-Geo-Lat, X-User-Geo-Lng, CF-IPCountry, X-Vercel-IP-Country",
+        Vary: "Origin, Accept-Language, X-User-Locale, X-User-Region, X-User-Geo-Lat, X-User-Geo-Lng, CF-IPCountry, X-Vercel-IP-Country",
       },
     },
   );

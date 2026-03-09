@@ -115,11 +115,31 @@ export default function SwapPage() {
       submissionLockRef.current = true;
       setSubmitting(true);
 
+      const quoteAgeMs = Date.now() - quote.dataUpdatedAt;
+      if (!quote.data || quoteAgeMs > 2 * 60 * 1000) {
+        await quote.refetch();
+      }
+
       const latestRouteResult = await routeQuery.refetch();
       const latestRoute = latestRouteResult.data;
       const outputAmount = latestRoute?.output_amount ? BigInt(latestRoute.output_amount) : 0n;
       if (!latestRoute || outputAmount <= 0n) {
         throw new Error(t("swap.priceUnavailable"));
+      }
+
+      const outputAmountArg = BigInt(latestRoute.output_amount_arg ?? "0");
+      if (outputAmountArg <= 0n || outputAmount < outputAmountArg) {
+        throw new Error("Route bounds check failed. Refresh quote and try again.");
+      }
+
+      const routeTimestamp = Date.parse(latestRoute.status?.round_datetime ?? "");
+      if (!Number.isFinite(routeTimestamp) || Date.now() - routeTimestamp > 2 * 60 * 1000) {
+        throw new Error("Swap route is stale. Please refresh and try again.");
+      }
+
+      const priceImpact = Number(latestRoute.price_impact ?? "0");
+      if (!Number.isFinite(priceImpact) || priceImpact > 0.15) {
+        throw new Error("Price impact is too high. Reduce amount and try again.");
       }
 
       const selectedBalanceBaseUnits = decimalToBaseUnits(selectedAsset.balance, selectedAsset.decimals);

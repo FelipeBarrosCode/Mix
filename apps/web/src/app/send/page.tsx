@@ -70,10 +70,23 @@ export default function SendPage() {
       toast({ title: t("send.invalidAmountTitle"), description: t("send.invalidAmountDescription"), variant: "danger" });
       return;
     }
-    if (!quote.data || !usdcAmount) {
+    const quoteAgeMs = Date.now() - quote.dataUpdatedAt;
+    const freshQuote = quote.data && quoteAgeMs <= 2 * 60 * 1000
+      ? quote.data
+      : (await quote.refetch()).data;
+
+    if (!freshQuote) {
       toast({ title: t("send.rateUnavailable"), variant: "danger" });
       return;
     }
+
+    const fiatNumeric = Number(fiatAmount || 0);
+    const quoteDerivedUsdc = (fiatNumeric / freshQuote.usdToFiat).toFixed(6).replace(/\.?(0+)$/, "");
+    if (!quoteDerivedUsdc) {
+      toast({ title: t("send.rateUnavailable"), variant: "danger" });
+      return;
+    }
+
     if (!activeAddress) {
       toast({ title: t("wallet.notConnected"), description: t("wallet.connectFirst"), variant: "danger" });
       return;
@@ -82,7 +95,7 @@ export default function SendPage() {
     setLoading(true);
     try {
       let raw = recipient.trim();
-      let amountUsdc = usdcAmount;
+      let amountUsdc = quoteDerivedUsdc;
       let draftNote = note;
       if (
         raw.startsWith("Mix://") ||
