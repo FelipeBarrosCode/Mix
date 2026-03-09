@@ -4,6 +4,10 @@ export async function getAccount(address: string) {
   return runWithIndexerFallback((client) => client.lookupAccountByID(address).do());
 }
 
+export async function getAsset(assetId: number) {
+  return runWithIndexerFallback((client) => client.lookupAssetByID(assetId).do());
+}
+
 export async function lookupAsset(address: string, assetId: number) {
   return runWithIndexerFallback((client) => client.lookupAccountAssets(address).assetId(assetId).do());
 }

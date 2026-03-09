@@ -7,7 +7,7 @@ import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowDownToLine, ArrowUpToLine, LineChart } from "lucide-react";
+import { ArrowDownToLine, ArrowLeftRight, ArrowUpToLine, LineChart } from "lucide-react";
 import { useWalletStore } from "@/stores/wallet-store";
 import { useAccountSummary } from "@/hooks/use-account-summary";
 import { baseUnitsToDecimal } from "@/lib/utils/amount";
@@ -108,6 +108,7 @@ export default function HomePage() {
           <Link href="/receive"><Button className="w-full" variant="secondary">{t("home.request")}</Button></Link>
           <Link href="/scan"><Button className="w-full" variant="secondary">{t("home.scan")}</Button></Link>
           <Link href="/contacts"><Button className="w-full" variant="secondary">{t("nav.contacts")}</Button></Link>
+          <Link href="/swap"><Button className="w-full" variant="secondary"><ArrowLeftRight className="mr-2" size={16} />{t("nav.swap")}</Button></Link>
           <Link href="/cash-in"><Button className="w-full" variant="secondary"><ArrowDownToLine className="mr-2" size={16} />{t("home.cashIn")}</Button></Link>
           <Link href="/cash-out"><Button className="w-full" variant="secondary"><ArrowUpToLine className="mr-2" size={16} />{t("home.cashOut")}</Button></Link>
           <Link href="/investments"><Button className="w-full" variant="secondary"><LineChart className="mr-2" size={16} />{t("nav.investments")}</Button></Link>

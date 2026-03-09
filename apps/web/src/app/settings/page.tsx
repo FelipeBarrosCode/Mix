@@ -6,7 +6,9 @@ import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 import { NetworkId } from "@/lib/algorand/network";
+import { probeAlgodEndpoint, probeIndexerEndpoint, validatePublicHttpsEndpoint } from "@/lib/algorand/endpoint-validation";
 import { useNetworkStore } from "@/stores/network-store";
 import { useActiveNetworkConfig } from "@/hooks/use-active-network";
 import { AppLocale, AppRegion, fiatFromRegion, usePreferencesStore } from "@/stores/preferences-store";
@@ -14,6 +16,7 @@ import { useI18n } from "@/hooks/use-i18n";
 
 export default function SettingsPage() {
   const { t } = useI18n();
+  const { toast } = useToast();
   const [algodEndpoint, setAlgodEndpoint] = useState("");
   const [indexerEndpoint, setIndexerEndpoint] = useState("");
   const network = useNetworkStore((s) => s.network);
@@ -24,6 +27,44 @@ export default function SettingsPage() {
   const setLocale = usePreferencesStore((s) => s.setLocale);
   const region = usePreferencesStore((s) => s.region);
   const setRegion = usePreferencesStore((s) => s.setRegion);
+
+  async function saveEndpoints() {
+    try {
+      const nextAlgod = algodEndpoint
+        ? validatePublicHttpsEndpoint(algodEndpoint, "Algod")
+        : null;
+      const nextIndexer = indexerEndpoint
+        ? validatePublicHttpsEndpoint(indexerEndpoint, "Indexer")
+        : null;
+
+      if (!nextAlgod && !nextIndexer) {
+        toast({ title: "No endpoint changes to save" });
+        return;
+      }
+
+      if (nextAlgod) {
+        await probeAlgodEndpoint(nextAlgod);
+      }
+      if (nextIndexer) {
+        await probeIndexerEndpoint(nextIndexer);
+      }
+
+      setOverrides(network as NetworkId, {
+        algodEndpoints: nextAlgod ? [nextAlgod, ...activeConfig.algodEndpoints] : activeConfig.algodEndpoints,
+        indexerEndpoints: nextIndexer ? [nextIndexer, ...activeConfig.indexerEndpoints] : activeConfig.indexerEndpoints,
+      });
+
+      setAlgodEndpoint("");
+      setIndexerEndpoint("");
+      toast({ title: t("settings.saveEndpoints") });
+    } catch (error) {
+      toast({
+        title: "Invalid endpoint configuration",
+        description: error instanceof Error ? error.message : t("common.unknownError"),
+        variant: "danger",
+      });
+    }
+  }
 
   return (
     <AppShell>
@@ -72,14 +113,7 @@ export default function SettingsPage() {
           <Button
             className="w-full"
             variant="secondary"
-            onClick={() => {
-              setOverrides(network as NetworkId, {
-                algodEndpoints: algodEndpoint ? [algodEndpoint, ...activeConfig.algodEndpoints] : activeConfig.algodEndpoints,
-                indexerEndpoints: indexerEndpoint ? [indexerEndpoint, ...activeConfig.indexerEndpoints] : activeConfig.indexerEndpoints,
-              });
-              setAlgodEndpoint("");
-              setIndexerEndpoint("");
-            }}
+            onClick={saveEndpoints}
           >
             {t("settings.saveEndpoints")}
           </Button>

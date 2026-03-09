@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowDownToLine, ArrowUpToLine, BookUser, Home, LineChart, QrCode, Send, Settings } from "lucide-react";
+import { ArrowDownToLine, ArrowLeftRight, ArrowUpToLine, BookUser, Home, LineChart, QrCode, Send, Settings } from "lucide-react";
 import { PropsWithChildren, useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils/cn";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import { useWalletStore } from "@/stores/wallet-store";
 import { useNetworkStore } from "@/stores/network-store";
 import { usePreferencesStore } from "@/stores/preferences-store";
@@ -14,6 +15,45 @@ import { useActiveNetworkConfig } from "@/hooks/use-active-network";
 import { useProfileStore } from "@/stores/profile-store";
 import { WalletAccessGate } from "@/components/wallet-access-gate";
 import { useTrackIncomingUsdc } from "@/hooks/use-track-incoming-usdc";
+
+const defaultHelpVideoByLocale: Record<string, string> = {
+  en: "https://youtu.be/_edZbCDtTPI",
+  es: "https://youtu.be/gyxkSlbem4U",
+  "pt-BR": "https://youtu.be/6M6zI8ts9cY",
+};
+
+const allowedHelpHosts = new Set(["youtu.be", "youtube.com", "www.youtube.com", "m.youtube.com"]);
+
+function toSafeHelpVideoUrl(input: string, locale: string): string {
+  const fallback = defaultHelpVideoByLocale[locale] ?? defaultHelpVideoByLocale.en;
+  try {
+    const url = new URL(input);
+    if (!allowedHelpHosts.has(url.hostname)) return fallback;
+    if (url.protocol !== "https:") return fallback;
+    return url.toString();
+  } catch {
+    return fallback;
+  }
+}
+
+function toSafeHelpEmbedUrl(input: string, locale: string): string {
+  const safe = toSafeHelpVideoUrl(input, locale);
+  try {
+    const url = new URL(safe);
+    if (url.hostname === "youtu.be") {
+      const id = url.pathname.replace(/^\//, "");
+      return `https://www.youtube.com/embed/${id}`;
+    }
+    if (url.hostname.includes("youtube.com")) {
+      const id = url.searchParams.get("v");
+      if (id) return `https://www.youtube.com/embed/${id}`;
+      if (url.pathname.startsWith("/embed/")) return url.toString();
+    }
+  } catch {
+    return "https://www.youtube.com/embed/_edZbCDtTPI";
+  }
+  return "https://www.youtube.com/embed/_edZbCDtTPI";
+}
 
 const mobileNav = [
   { href: "/home", key: "nav.home", icon: Home },
@@ -29,6 +69,7 @@ const desktopNav = [
   { href: "/send", key: "nav.send", icon: Send },
   { href: "/receive", key: "nav.receive", icon: QrCode },
   { href: "/contacts", key: "nav.contacts", icon: BookUser },
+  { href: "/swap", key: "nav.swap", icon: ArrowLeftRight },
   { href: "/cash-in", key: "nav.cashIn", icon: ArrowDownToLine },
   { href: "/cash-out", key: "nav.cashOut", icon: ArrowUpToLine },
   { href: "/investments", key: "nav.investments", icon: LineChart },
@@ -44,33 +85,19 @@ export function AppShell({ children }: PropsWithChildren) {
   const activeAddress = useWalletStore((s) => s.activeAddress);
   const connected = useWalletStore((s) => s.connected);
   const hydrateProfile = useProfileStore((s) => s.hydrate);
-  const hasSeenIntro = useProfileStore((s) => s.hasSeenIntro);
   const network = useActiveNetworkConfig();
-  const { t, helpVideoUrl } = useI18n();
+  const { t, helpVideoUrl, locale } = useI18n();
+  const { toast } = useToast();
   const [helpOpen, setHelpOpen] = useState(false);
 
-  const helpEmbedUrl = useMemo(() => {
-    try {
-      const url = new URL(helpVideoUrl);
-      if (url.hostname === "youtu.be") {
-        const id = url.pathname.replace(/^\//, "");
-        return `https://www.youtube.com/embed/${id}`;
-      }
-      if (url.hostname.includes("youtube.com")) {
-        const id = url.searchParams.get("v");
-        if (id) return `https://www.youtube.com/embed/${id}`;
-      }
-      return helpVideoUrl;
-    } catch {
-      return helpVideoUrl;
-    }
-  }, [helpVideoUrl]);
+  const safeHelpVideoUrl = useMemo(() => toSafeHelpVideoUrl(helpVideoUrl, locale), [helpVideoUrl, locale]);
+  const helpEmbedUrl = useMemo(() => toSafeHelpEmbedUrl(helpVideoUrl, locale), [helpVideoUrl, locale]);
 
   function openHelp() {
     if (typeof window === "undefined") return;
     const isMobile = window.matchMedia("(max-width: 1023px)").matches;
     if (isMobile) {
-      window.location.href = helpVideoUrl;
+      window.location.href = safeHelpVideoUrl;
       return;
     }
     setHelpOpen(true);
@@ -86,7 +113,7 @@ export function AppShell({ children }: PropsWithChildren) {
   }, [reconnect, hydrateNetwork, hydratePreferences, hydrateProfile]);
 
   const shortWallet = activeAddress ? `${activeAddress.slice(0, 6)}...${activeAddress.slice(-6)}` : "Not connected";
-  const gateLocked = !connected || !hasSeenIntro;
+  const gateLocked = !connected;
 
   return (
     <div className="min-h-screen pb-20 lg:pb-0">
@@ -127,7 +154,18 @@ export function AppShell({ children }: PropsWithChildren) {
               >
                 ?
               </button>
-              <p className="text-sm font-medium">{activeAddress ? shortWallet : t("wallet.notConnected")}</p>
+              <button
+                type="button"
+                className="text-sm font-medium hover:text-accent"
+                onClick={() => {
+                  if (!activeAddress) return;
+                  navigator.clipboard.writeText(activeAddress).then(() => {
+                    toast({ title: t("wallet.addressCopied") });
+                  }).catch(() => undefined);
+                }}
+              >
+                {activeAddress ? shortWallet : t("wallet.notConnected")}
+              </button>
             </div>
           </header>
           <main className="flex-1 p-4 pt-16 lg:p-8 lg:pt-8">
@@ -159,6 +197,18 @@ export function AppShell({ children }: PropsWithChildren) {
       >
         <span className="block w-[18px] text-center text-sm font-semibold leading-none">?</span>
       </button>
+
+      <Link
+        href="/swap"
+        className={cn(
+          "fixed right-14 top-4 z-40 rounded-full border border-border bg-card/95 p-2 text-muted shadow-sm backdrop-blur lg:hidden",
+          pathname.startsWith("/swap") ? "text-accent" : "",
+          gateLocked && "hidden",
+        )}
+        aria-label={t("nav.swap")}
+      >
+        <ArrowLeftRight size={18} />
+      </Link>
 
       <nav className={cn("fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card/95 backdrop-blur lg:hidden", gateLocked && "hidden")}> 
         <div className="mx-auto grid max-w-md grid-cols-6">

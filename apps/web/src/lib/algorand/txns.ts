@@ -13,7 +13,7 @@ export async function buildUsdcTransferTxn(input: {
   return algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
     sender: input.from,
     receiver: input.to,
-    amount: Number(input.amount),
+    amount: input.amount,
     assetIndex: usdcAssetId,
     note: input.note ? new TextEncoder().encode(input.note) : undefined,
     suggestedParams: sp,
