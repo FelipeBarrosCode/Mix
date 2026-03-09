@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { NetworkId } from "@/lib/algorand/network";
+import { DEFAULT_NETWORK, NetworkId } from "@/lib/algorand/network";
 import {
   isTrustedEndpoint,
   probeAlgodEndpoint,
@@ -25,8 +25,6 @@ export default function SettingsPage() {
   const [algodEndpoint, setAlgodEndpoint] = useState("");
   const [indexerEndpoint, setIndexerEndpoint] = useState("");
   const [advancedMode, setAdvancedMode] = useState(false);
-  const network = useNetworkStore((s) => s.network);
-  const setNetwork = useNetworkStore((s) => s.setNetwork);
   const activeConfig = useActiveNetworkConfig();
   const setOverrides = useNetworkStore((s) => s.setOverrides);
   const locale = usePreferencesStore((s) => s.locale);
@@ -61,7 +59,7 @@ export default function SettingsPage() {
         await probeIndexerEndpoint(nextIndexer);
       }
 
-      setOverrides(network as NetworkId, {
+      setOverrides(DEFAULT_NETWORK as NetworkId, {
         algodEndpoints: nextAlgod ? [nextAlgod, ...activeConfig.algodEndpoints] : activeConfig.algodEndpoints,
         indexerEndpoints: nextIndexer ? [nextIndexer, ...activeConfig.indexerEndpoints] : activeConfig.indexerEndpoints,
       });
@@ -83,10 +81,6 @@ export default function SettingsPage() {
       <div className="space-y-4">
         <Card className="space-y-3">
           <h1 className="text-xl font-bold">{t("nav.settings")}</h1>
-          <div className="flex gap-2">
-            <Button variant={network === "testnet" ? "default" : "secondary"} onClick={() => setNetwork("testnet")}>{t("settings.testnet")}</Button>
-            <Button variant={network === "mainnet" ? "default" : "secondary"} onClick={() => setNetwork("mainnet")}>{t("settings.mainnet")}</Button>
-          </div>
           <p className="text-xs text-muted">{t("settings.currentNetwork")}: {activeConfig.label}</p>
         </Card>
 

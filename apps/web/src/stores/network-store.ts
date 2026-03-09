@@ -3,7 +3,6 @@ import { DEFAULT_NETWORK, NETWORKS, NetworkConfig, NetworkId } from "@/lib/algor
 import { readJson, writeJson } from "@/lib/storage/local";
 
 type PersistedNetwork = {
-  network: NetworkId;
   overrides: Partial<Record<NetworkId, Partial<NetworkConfig>>>;
 };
 
@@ -12,7 +11,6 @@ type NetworkStore = {
   overrides: Partial<Record<NetworkId, Partial<NetworkConfig>>>;
   hydrated: boolean;
   hydrate: () => void;
-  setNetwork: (network: NetworkId) => void;
   setOverrides: (network: NetworkId, patch: Partial<NetworkConfig>) => void;
   getActiveConfig: () => NetworkConfig;
 };
@@ -25,17 +23,13 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
   hydrated: false,
   hydrate: () => {
     if (get().hydrated) return;
-    const persisted = readJson<PersistedNetwork>(STORAGE_KEY, { network: DEFAULT_NETWORK, overrides: {} });
-    set({ network: persisted.network, overrides: persisted.overrides, hydrated: true });
-  },
-  setNetwork: (network) => {
-    set({ network });
-    writeJson(STORAGE_KEY, { network, overrides: get().overrides });
+    const persisted = readJson<PersistedNetwork>(STORAGE_KEY, { overrides: {} });
+    set({ network: DEFAULT_NETWORK, overrides: persisted.overrides, hydrated: true });
   },
   setOverrides: (network, patch) => {
     const overrides = { ...get().overrides, [network]: { ...get().overrides[network], ...patch } };
     set({ overrides });
-    writeJson(STORAGE_KEY, { network: get().network, overrides });
+    writeJson(STORAGE_KEY, { overrides });
   },
   getActiveConfig: () => {
     const network = get().network;

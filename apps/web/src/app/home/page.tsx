@@ -6,7 +6,6 @@ import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { ArrowDownToLine, ArrowLeftRight, ArrowUpToLine, LineChart } from "lucide-react";
 import { useWalletStore } from "@/stores/wallet-store";
 import { useAccountSummary } from "@/hooks/use-account-summary";
@@ -70,7 +69,6 @@ export default function HomePage() {
         <Card className="space-y-3 lg:grid lg:grid-cols-[1fr_auto] lg:items-center">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-extrabold">Mix</h1>
-            <Badge>{network.label}</Badge>
           </div>
           <p className="text-sm text-muted">
             {t("home.subtitle")}
