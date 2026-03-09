@@ -1,31 +1,39 @@
-# Mix (Algorand USDC Pix-like payments)
+# Mix
 
-Mobile-first, non-custodial, serverless USDC payments on Algorand.
+Mobile-first, non-custodial USDC app on Algorand.
 
-This app is a UI/UX facilitator only: it resolves recipients, builds transactions, and hands signing to Pera Wallet.
+Mix is a wallet-signing dApp. The app prepares transactions and user flows, and the user signs in Pera Wallet.
 
-## Non-custodial disclaimer
+## What Mix is (and is not)
 
-- We do **not** hold your keys.
-- We do **not** hold your funds.
-- Signing is done in Pera Wallet.
-- Payments are on-chain and irreversible unless recipient voluntarily returns funds.
-- No banking Pix integration, no fiat rails, no custody, no dispute guarantees.
+- Non-custodial: no private key storage in app.
+- Wallet-first: signing happens in Pera Wallet.
+- On-chain execution: transfers and swaps settle on Algorand.
+- Not a bank: no custody, no fiat account rails, no chargebacks.
 
-## Stack
+## Current architecture
 
-- Next.js App Router + TypeScript
-- Tailwind + shadcn-style components
-- Zustand
-- TanStack Query
-- zod + react-hook-form
-- algosdk
-- Pera Wallet Connect
-- AlgoKit-style contract workflow (Python/PyTeal contract source + deploy scripts)
+- Frontend: Next.js App Router + TypeScript (`apps/web`).
+- State: Zustand.
+- Data fetching/cache: TanStack Query.
+- Wallet: `@perawallet/connect` (Pera-only by product decision).
+- Chain SDK: `algosdk`.
+- Swap routing/tx generation: `@tinymanorg/tinyman-js-sdk`.
+- QR: `qr-scanner` and `qrcode`.
+- Localization: in-app dictionaries + `/api/i18n/messages` resolver.
+
+## Product surfaces
+
+- `send` -> send USDC with fiat equivalent preview.
+- `receive` -> receive info + fixed QR behavior.
+- `swap` (Exchange) -> Tinyman route, sign in Pera, submit on-chain.
+- `cash`, `cash-in`, `cash-out` -> guided off-chain provider pages.
+- `investments` -> educational matrix and detail pages.
+- `contacts`, `settings`, `scan`, `pay`, `confirm`, `receipt`.
 
 ## Monorepo layout
 
-```
+```text
 /
   apps/
     web/
@@ -37,146 +45,106 @@ This app is a UI/UX facilitator only: it resolves recipients, builds transaction
         lib/
         stores/
         test/
-  contracts/
-    invoice/
+  .github/
+    workflows/
 ```
 
-## Environment/config
+## Security model
 
-Copy `apps/web/.env.example` to `apps/web/.env.local`.
+- Non-custodial signing only.
+- CSP and security headers in `apps/web/next.config.ts`.
+- CORS allowlist in `apps/web/src/app/api/i18n/messages/route.ts`.
+- Endpoint validation + health probes before custom RPC/indexer save.
+- Trusted endpoint model with advanced override in Settings.
+- Swap prechecks before sign:
+  - fresh route refetch
+  - stale route guard
+  - price impact guard
+  - amount/output sanity checks
+- Dependency and lockfile checks in CI (`.github/workflows/security-ci.yml`).
 
-Important vars:
+## Network and assets
 
-- `NEXT_PUBLIC_DEFAULT_NETWORK` (`testnet` or `mainnet`)
-- `NEXT_PUBLIC_TESTNET_INVOICE_APP_ID`
-- `NEXT_PUBLIC_MAINNET_INVOICE_APP_ID`
-- Optional endpoint overrides:
-  - `NEXT_PUBLIC_TESTNET_ALGOD`
-  - `NEXT_PUBLIC_TESTNET_INDEXER`
-  - `NEXT_PUBLIC_MAINNET_ALGOD`
-  - `NEXT_PUBLIC_MAINNET_INDEXER`
+Defined in `apps/web/src/lib/algorand/network.ts`.
 
-Runtime network values are also editable in `/settings` and persisted in localStorage.
+- TestNet USDC ASA: `10458941`
+- MainNet USDC ASA: `31566704`
 
-## Network config
+Default RPC/indexer endpoints are Algonode + Nodely with fallback logic.
 
-Centralized in `apps/web/src/lib/algorand/network.ts`:
+## Environment variables
 
-- algod endpoint list (with fallback)
-- indexer endpoint list (with fallback)
-- USDC asset ID
-- NFD registry app ID (`.algo` resolution)
-- invoice contract app ID
-- explorer base URL
+Set in `apps/web/.env.local`.
 
-Defaults:
+- `NEXT_PUBLIC_DEFAULT_NETWORK` -> `testnet` or `mainnet`
+- `NEXT_PUBLIC_TESTNET_ALGOD` (optional)
+- `NEXT_PUBLIC_TESTNET_INDEXER` (optional)
+- `NEXT_PUBLIC_MAINNET_ALGOD` (optional)
+- `NEXT_PUBLIC_MAINNET_INDEXER` (optional)
+- `NEXT_PUBLIC_APP_ORIGIN` (recommended for strict API CORS)
+- `APP_ORIGIN` (server-side CORS alternative)
 
-- TestNet USDC: `10458941`
-- MainNet USDC: `31566704`
+Important for CORS:
 
-## Contract deploy steps
+- Use origin only, no path.
+- Correct: `https://example.trycloudflare.com`
+- Incorrect: `https://example.trycloudflare.com/home`
 
-Contract source is in `contracts/invoice/contract.py`.
+## Local development
 
-1. Install Python deps:
-
-```bash
-cd contracts/invoice
-pip install -r requirements.txt
-```
-
-2. Compile TEAL:
-
-```bash
-make compile
-```
-
-3. Set env for deploy:
-
-- `TESTNET_ALGOD_URL`, `TESTNET_ALGOD_TOKEN`, `TESTNET_DEPLOYER_MNEMONIC`
-- `MAINNET_ALGOD_URL`, `MAINNET_ALGOD_TOKEN`, `MAINNET_DEPLOYER_MNEMONIC`
-
-4. Deploy:
-
-```bash
-make deploy-testnet
-make deploy-mainnet
-```
-
-5. Put resulting app IDs into:
-
-- `.env.local`
-- or `/settings` in-app
-
-## Running locally
-
-From repo root:
+From repository root:
 
 ```bash
 pnpm install
 pnpm dev
 ```
 
-Open `http://localhost:3000`.
+Then open `http://localhost:3000`.
 
-## Core flows
+## Scripts
 
-- Send USDC to address or `.algo`
-- Live fiat-equivalent display (USD/BRL/EUR by region) for USDC amounts
-- Resolve `.algo` from on-chain registry box reads (no NFD REST API)
-- QR scan + QR generate + `Mix://` URI parsing
-- On-chain invoice create/pay/cancel flows
-- Local-only contacts and reminder drafts
-- Cash in/out guidance hubs with region-aware provider listings and WalletConnect dApp links where supported
+Root scripts:
+
+```bash
+pnpm dev
+pnpm build
+pnpm start
+pnpm test
+pnpm lint
+```
+
+Web package scripts are the same under `apps/web`.
 
 ## Testing
 
-Run tests:
+Run:
 
 ```bash
 pnpm test
 ```
 
-Included:
+Current tests include:
 
-- amount conversion tests
-- URI parsing tests
-- address validation tests
-- invoice box parsing tests
-- smoke tests for send and invoice flow guards
+- amount conversion
+- URI parsing
+- address validation
+- send flow smoke checks
 
-## Manual TestNet verification
+## CI security workflow
 
-### Send flow
+`/.github/workflows/security-ci.yml` runs on PRs and `main` pushes:
 
-1. Set network to TestNet.
-2. Connect Pera Wallet test account.
-3. Ensure sender and receiver are opted into USDC TestNet asset.
-4. Use `/send` with address or `.algo`.
-5. Confirm details and sign in Pera.
-6. Verify `/receipt/[txid]` explorer link.
+- frozen lockfile install
+- lockfile consistency check
+- web app build
+- production dependency audit
 
-### Invoice flow
+## Operational notes
 
-1. Deploy invoice contract to TestNet.
-2. Set TestNet invoice app ID in `/settings`.
-3. Open `/invoice/new`, create invoice.
-4. Open generated `/invoice/[id]`.
-5. Pay invoice from payer wallet through `/send?invoiceId=...` path.
-6. Re-open invoice page and confirm status is `PAID`.
+- Pera may show grouped swap transactions where some entries show `0` value; this is expected for router/app-call style swap groups.
+- Custom RPC/indexer hosts outside trusted domains require enabling advanced mode in Settings.
+- If using dynamic tunnel domains, update `NEXT_PUBLIC_APP_ORIGIN`/`APP_ORIGIN` whenever the tunnel hostname changes.
 
-## Security notes
+## Disclaimer
 
-- No private key handling in app.
-- No backend, no custody, no hidden server reconciliation.
-- Local storage only for non-sensitive state (contacts, caches, history, drafts).
-- Wallet session failures and signature rejections are surfaced as user-facing errors.
-
-## Limitations
-
-- No fiat features.
-- No payment reversals/disputes.
-- No background execution for scheduled payments.
-- `.algo` resolution depends on configured on-chain registry layout.
-- Cash in/out providers are external services; availability, KYC, and rates vary by region.
-- This app does not custody funds during fiat on-ramp/off-ramp and does not guarantee third-party provider execution.
+Mix is software that assists transaction preparation and routing. Users are responsible for wallet security, signing decisions, network selection, and jurisdiction-specific compliance.
