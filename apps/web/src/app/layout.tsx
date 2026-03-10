@@ -4,7 +4,7 @@ import { AppProviders } from "@/components/app-providers";
 
 export const metadata: Metadata = {
   title: "Mix",
-  description: "Pix-like USDC payments on Algorand. Non-custodial and serverless.",
+  description: "USDCa payments on Algorand. Non-custodial and serverless.",
 };
 
 export default function RootLayout({

@@ -210,7 +210,7 @@ export default function SwapPage() {
                 <Label>{t("swap.fiatAmount")} ({fiatCurrency})</Label>
                 <Input readOnly value={equivalents.fiat} placeholder="--" />
                 <p className="text-xs text-muted">
-                  {t("swap.usdcEquivalent")}: {equivalents.usdc ? `${equivalents.usdc} USDC` : "--"}
+                  {t("swap.usdcEquivalent")}: {equivalents.usdc ? `${equivalents.usdc} USDCa` : "--"}
                 </p>
                 {routeQuery.isError ? <p className="text-xs text-danger">{t("swap.priceUnavailable")}</p> : null}
               </div>

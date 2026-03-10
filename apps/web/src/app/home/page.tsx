@@ -93,7 +93,7 @@ export default function HomePage() {
             {fiatBalance === null ? "--" : formatCurrency(fiatBalance, fiatCurrency, locale)}
           </p>
           <p className="text-xs text-muted">
-            {t("home.usdcBalance")}: {usdcAmount} USDC
+            {t("home.usdcBalance")}: {usdcAmount} USDCa
           </p>
           <p className="text-xs text-muted">
             {t("home.rateUpdated")}: {quote.data ? formatDateTimeIso(quote.data.updatedAt, locale) : "--"}
@@ -128,12 +128,12 @@ export default function HomePage() {
             <p className="text-sm font-semibold">{t("home.scheduled")}</p>
             {drafts.slice(0, 3).map((draft) => (
               <div key={draft.id} className="rounded-xl border border-border p-2 text-xs">
-                <p>{draft.amount} USDC {t("home.to")} {short(draft.to)}</p>
+                <p>{draft.amount} USDCa {t("home.to")} {short(draft.to)}</p>
                 <p className="text-muted">{formatDateTimeIso(draft.remindAt, locale)}</p>
                 <a
                   className="text-accent underline"
                   href={`data:text/calendar;charset=utf-8,${encodeURIComponent(
-                    buildIcs(draft.remindAt, "Mix payment reminder", `Pay ${draft.amount} USDC to ${draft.to}`),
+                    buildIcs(draft.remindAt, "Mix payment reminder", `Pay ${draft.amount} USDCa to ${draft.to}`),
                   )}`}
                   download="Mix-reminder.ics"
                 >
@@ -150,7 +150,7 @@ export default function HomePage() {
             {history.slice(0, 5).map((item) => (
               <div key={item.txid} className="rounded-xl border border-border p-2 text-xs">
                 <p className="font-medium">{item.type.replace("_", " ")}</p>
-                {item.amount ? <p>{item.amount} USDC</p> : null}
+                {item.amount ? <p>{item.amount} USDCa</p> : null}
                 <p className="text-muted">{formatDateTimeIso(item.createdAt, locale)}</p>
               </div>
             ))}

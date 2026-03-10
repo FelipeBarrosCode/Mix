@@ -28,7 +28,7 @@ Mix is a wallet-signing dApp. The app prepares transactions and user flows, and 
 - `receive` -> receive info + fixed QR behavior.
 - `swap` (Exchange) -> Tinyman route, sign in Pera, submit on-chain.
 - `cash`, `cash-in`, `cash-out` -> guided off-chain provider pages.
-- `investments` -> educational matrix and detail pages.
+- `investments` -> risk matrix and detail pages.
 - `contacts`, `settings`, `scan`, `pay`, `confirm`, `receipt`.
 
 ## Monorepo layout

@@ -34,7 +34,7 @@ export default function ReceiptPage() {
           <p className="text-sm font-semibold">
             {(() => {
               const value = convertUsdcToFiat(item.amount, quote.data);
-              return value === null ? `${item.amount} USDC` : `${formatCurrency(value, fiatCurrency, locale)} (${item.amount} USDC)`;
+              return value === null ? `${item.amount} USDCa` : `${formatCurrency(value, fiatCurrency, locale)} (${item.amount} USDCa)`;
             })()}
           </p>
         ) : null}

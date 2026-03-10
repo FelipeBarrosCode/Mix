@@ -12,7 +12,7 @@ import { useProfileStore } from "@/stores/profile-store";
 import { useWalletStore } from "@/stores/wallet-store";
 
 export function WalletAccessGate() {
-  const { t } = useI18n();
+  const { t, helpVideoUrl } = useI18n();
   const { toast } = useToast();
   const connected = useWalletStore((s) => s.connected);
   const activeAddress = useWalletStore((s) => s.activeAddress);
@@ -62,6 +62,9 @@ export function WalletAccessGate() {
           <>
             <p className="text-sm text-muted">{t("gate.introText")}</p>
             <p className="text-xs text-muted">{t("gate.introSafety")}</p>
+            <Button className="w-full" variant="outline" onClick={() => { window.location.href = helpVideoUrl; }}>
+              {t("gate.explainHow")}
+            </Button>
             <Button className="w-full" onClick={() => connect()} disabled={loadingWallet}>
               {loadingWallet ? t("gate.connecting") : t("wallet.connect")}
             </Button>

@@ -200,7 +200,7 @@ export default function SendPage() {
             <Label>{t("send.amountFiatLabel")} ({fiatCurrency})</Label>
             <Input placeholder="10.50" inputMode="decimal" className="text-2xl font-bold" value={fiatAmount} onChange={(e) => setFiatAmount(e.target.value)} />
             <p className="mt-1 text-xs text-muted">
-              {usdcAmount ? `${t("send.usdcEquivalent")}: ${usdcAmount} USDC` : ""}
+              {usdcAmount ? `${t("send.usdcEquivalent")}: ${usdcAmount} USDCa` : ""}
             </p>
             <p className="mt-1 text-[11px] text-muted">{t("settings.fiat")}: {fiatCurrency}</p>
           </div>

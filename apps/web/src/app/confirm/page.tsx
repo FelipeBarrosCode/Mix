@@ -110,14 +110,14 @@ export default function ConfirmPage() {
             <summary className="cursor-pointer text-xs text-muted">{t("confirm.showFullAddress")}</summary>
             <p className="mt-2 break-all text-xs">{draft.resolvedAddress}</p>
           </details>
-          <p>{t("confirm.amount")}: {draft.amount} USDC</p>
+          <p>{t("confirm.amount")}: {draft.amount} USDCa</p>
           <p>
             {t("confirm.fiatEquivalent")}: {(() => {
               const value = convertUsdcToFiat(draft.amount || "0", quote.data);
               return value === null ? "--" : formatCurrency(value, fiatCurrency, locale);
             })()}
           </p>
-          <p>{t("confirm.asset")}: USDC (ASA {network.usdcAssetId})</p>
+          <p>{t("confirm.asset")}: USDCa (ASA {network.usdcAssetId})</p>
           <p>{t("confirm.estimatedFee")}: 0.001 ALGO</p>
           {draft.note ? <p>{t("confirm.reference")}: {draft.note}</p> : null}
           <div className="pt-1">

@@ -15,7 +15,8 @@ function PayRouteInner() {
   const amount = searchParams.get("amount") ?? "";
   const note = searchParams.get("note") ?? "";
   const assetInput = searchParams.get("asset") ?? "31566704";
-  const asset = assetInput.toUpperCase() === "USDC" ? "31566704" : assetInput;
+  const normalizedAsset = assetInput.toUpperCase();
+  const asset = normalizedAsset === "USDC" || normalizedAsset === "USDCA" ? "31566704" : assetInput;
 
   const deepLink = useMemo(() => {
     const params = new URLSearchParams({ asset });

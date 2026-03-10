@@ -91,7 +91,7 @@ export const CASH_PROVIDERS: CashProvider[] = [
     regions: ["US", "EU", "LATAM", "BR", "GLOBAL"],
     methods: ["cash.method.fiatBuy", "cash.method.withdrawAlgorand"],
     custody: "custodial",
-    url: "https://www.kraken.com/",
+    url: "https://www.kraken.com/c",
     noteKey: "cash.provider.kraken.note",
   },
   {
