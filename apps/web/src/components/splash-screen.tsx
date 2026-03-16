@@ -1,8 +1,6 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState } from "react";
-import mixerLogo from "@/public/MixerGood.png";
 
 const SESSION_PREFIX = "mix-session-";
 const STORAGE_PREFIX = "mix:splash:session:";
@@ -62,7 +60,10 @@ export function SplashScreen() {
   return (
     <div className="mix-splash-overlay fixed inset-0 z-[100] flex items-center justify-center bg-bg/95 backdrop-blur-sm">
       <div className="mix-splash-logo flex flex-col items-center gap-4">
-        <Image src={mixerLogo} alt="Mixer" width={220} height={220} priority />
+        <div className="flex h-28 w-28 items-center justify-center rounded-[2rem] border border-white/10 bg-white/5 text-3xl font-semibold tracking-[0.3em] text-fg shadow-[0_20px_60px_rgba(0,0,0,0.25)]">
+          MIX
+        </div>
+
       </div>
     </div>
   );

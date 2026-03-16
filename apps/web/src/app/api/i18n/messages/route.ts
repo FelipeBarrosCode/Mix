@@ -20,9 +20,9 @@ function normalizeOrigin(value: string): string {
 const configuredOrigin = normalizeOrigin(configuredOriginRaw);
 
 const helpVideoByLocale: Record<I18nLocale, string> = {
-  en: "https://youtu.be/_edZbCDtTPI",
-  es: "https://youtu.be/gyxkSlbem4U",
-  "pt-BR": "https://youtu.be/6M6zI8ts9cY",
+  en: "https://youtu.be/yZkmXeotLPI",
+  es: "https://youtu.be/UoJEmFEkH-A",
+  "pt-BR": "https://youtu.be/8WLNP3onJRQ",
 };
 
 function localeFromAcceptLanguage(value: string | null): I18nLocale {

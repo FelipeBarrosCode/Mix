@@ -1,0 +1,47 @@
+2026-03-14 12:41:23,003 - root - INFO - STDIO MODE: Logging configured - all logs redirected to ./.opencode/chroma-logs/chroma_mcp_stdio_1773517283.log
+2026-03-14 12:41:23,003 - chromamcp.unconfigured - WARNING - Logger requested before main configuration.
+2026-03-14 12:41:23,003 - root - INFO - Log retention policy set to 7 days
+2026-03-14 12:41:23,003 - root - INFO - Monkey patched logging.getLogger to ensure all future loggers use file output only
+2026-03-14 12:41:23,007 - chromamcp.utils.set_server_config - INFO - Global server config set: ChromaClientConfig(client_type='persistent', embedding_function_name='default', data_dir='./.opencode/chroma-data', host=None, port=8000, ssl=True, tenant=None, database=None, api_key=None, use_cpu_provider=None)
+2026-03-14 12:41:23,007 - chromamcp - INFO - Chroma client configuration set: persistent
+2026-03-14 12:41:23,007 - chromamcp.utils.chroma_client - INFO - Instantiating embedding function: 'default'
+2026-03-14 12:41:23,034 - chromamcp.utils.chroma_client - INFO - Successfully instantiated embedding function: 'default'
+2026-03-14 12:41:23,034 - chromamcp - INFO - Initializing persistent ChromaDB client at: ./.opencode/chroma-data
+2026-03-14 12:41:23,190 - chromamcp - INFO - Ensuring essential ChromaDB collections exist...
+2026-03-14 12:41:23,192 - chromamcp - INFO - Essential collection 'codebase_v1' not found (error: NotFoundError), attempting to create...
+2026-03-14 12:41:23,195 - chromamcp - INFO - Successfully created essential collection 'codebase_v1'.
+2026-03-14 12:41:23,195 - chromamcp - INFO - Essential collection 'chat_history_v1' not found (error: NotFoundError), attempting to create...
+2026-03-14 12:41:23,195 - chromamcp - INFO - Successfully created essential collection 'chat_history_v1'.
+2026-03-14 12:41:23,195 - chromamcp - INFO - Essential collection 'derived_learnings_v1' not found (error: NotFoundError), attempting to create...
+2026-03-14 12:41:23,196 - chromamcp - INFO - Successfully created essential collection 'derived_learnings_v1'.
+2026-03-14 12:41:23,196 - chromamcp - INFO - Essential collection 'thinking_sessions_v1' not found (error: NotFoundError), attempting to create...
+2026-03-14 12:41:23,197 - chromamcp - INFO - Successfully created essential collection 'thinking_sessions_v1'.
+2026-03-14 12:41:23,197 - chromamcp - INFO - Essential collection 'validation_evidence_v1' not found (error: NotFoundError), attempting to create...
+2026-03-14 12:41:23,198 - chromamcp - INFO - Successfully created essential collection 'validation_evidence_v1'.
+2026-03-14 12:41:23,198 - chromamcp - INFO - Essential collection 'test_results_v1' not found (error: NotFoundError), attempting to create...
+2026-03-14 12:41:23,198 - chromamcp - INFO - Successfully created essential collection 'test_results_v1'.
+2026-03-14 12:41:23,198 - chromamcp - INFO - Created 6 essential collections on server startup.
+2026-03-14 12:41:23,198 - chromamcp - INFO - ChromaDB client (persistent) initialized successfully.
+2026-03-14 12:41:23,198 - chromamcp - INFO - Server configured (CPU provider: auto-detected)
+2026-03-14 12:41:23,198 - chromamcp - INFO - Logs will be saved to: /Users/felipebarros/Documents/CodingProjects/mix-webApp/apps/./.opencode/chroma-logs
+2026-03-14 12:41:23,199 - chromamcp - INFO - Chroma MCP server v0.2.28 started. Using stdio transport.
+2026-03-14 12:41:23,205 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2026-03-14 12:41:23,211 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2026-03-14 12:41:23,211 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2026-03-14 12:43:57,336 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2026-03-14 12:54:57,735 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2026-03-14 12:55:04,997 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2026-03-14 12:55:08,413 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2026-03-14 12:57:05,856 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2026-03-14 12:57:59,934 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2026-03-14 12:58:03,920 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2026-03-14 12:58:08,725 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2026-03-14 12:58:16,829 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2026-03-14 12:58:26,506 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2026-03-14 12:58:50,350 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2026-03-14 12:59:02,728 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2026-03-14 14:36:33,920 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2026-03-14 14:36:39,007 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2026-03-14 14:36:52,445 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2026-03-14 14:37:11,229 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2026-03-14 14:37:14,791 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest

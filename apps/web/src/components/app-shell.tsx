@@ -17,9 +17,9 @@ import { WalletAccessGate } from "@/components/wallet-access-gate";
 import { useTrackIncomingUsdc } from "@/hooks/use-track-incoming-usdc";
 
 const defaultHelpVideoByLocale: Record<string, string> = {
-  en: "https://youtu.be/_edZbCDtTPI",
-  es: "https://youtu.be/gyxkSlbem4U",
-  "pt-BR": "https://youtu.be/6M6zI8ts9cY",
+  en: "https://youtu.be/yZkmXeotLPI",
+  es: "https://youtu.be/UoJEmFEkH-A",
+  "pt-BR": "https://youtu.be/8WLNP3onJRQ",
 };
 
 const allowedHelpHosts = new Set(["youtu.be", "youtube.com", "www.youtube.com", "m.youtube.com"]);
@@ -50,9 +50,9 @@ function toSafeHelpEmbedUrl(input: string, locale: string): string {
       if (url.pathname.startsWith("/embed/")) return url.toString();
     }
   } catch {
-    return "https://www.youtube.com/embed/_edZbCDtTPI";
+    return "https://www.youtube.com/embed/yZkmXeotLPI";
   }
-  return "https://www.youtube.com/embed/_edZbCDtTPI";
+  return "https://www.youtube.com/embed/yZkmXeotLPI";
 }
 
 const mobileNav = [

@@ -12,7 +12,7 @@ export function useI18n() {
   const geoResolved = usePreferencesStore((s) => s.geoResolved);
   const applyGeoDefaults = usePreferencesStore((s) => s.applyGeoDefaults);
   const dict = useI18nStore((s) => s.byLocale[locale] ?? fallbackMessages[locale] ?? fallbackMessages.en);
-  const helpVideoUrl = useI18nStore((s) => s.helpVideoByLocale[locale] ?? "https://youtu.be/_edZbCDtTPI");
+  const helpVideoUrl = useI18nStore((s) => s.helpVideoByLocale[locale] ?? "https://youtu.be/yZkmXeotLPI");
   const hydrateLocale = useI18nStore((s) => s.hydrateLocale);
   const hydrateDetected = useI18nStore((s) => s.hydrateDetected);
 
