@@ -129,17 +129,17 @@ export default function SwapPage() {
 
       const outputAmountArg = BigInt(latestRoute.output_amount_arg ?? "0");
       if (outputAmountArg <= 0n || outputAmount < outputAmountArg) {
-        throw new Error("Route bounds check failed. Refresh quote and try again.");
+        throw new Error(t("swap.routeBoundsError"));
       }
 
       const routeTimestamp = Date.parse(latestRoute.status?.round_datetime ?? "");
       if (!Number.isFinite(routeTimestamp) || Date.now() - routeTimestamp > 2 * 60 * 1000) {
-        throw new Error("Swap route is stale. Please refresh and try again.");
+        throw new Error(t("swap.routeStale"));
       }
 
       const priceImpact = Number(latestRoute.price_impact ?? "0");
       if (!Number.isFinite(priceImpact) || priceImpact > 0.15) {
-        throw new Error("Price impact is too high. Reduce amount and try again.");
+        throw new Error(t("swap.priceImpactHigh"));
       }
 
       const selectedBalanceBaseUnits = decimalToBaseUnits(selectedAsset.balance, selectedAsset.decimals);

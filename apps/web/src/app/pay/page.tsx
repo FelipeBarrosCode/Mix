@@ -5,33 +5,47 @@ import { useSearchParams } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useActiveNetworkConfig } from "@/hooks/use-active-network";
 import { useI18n } from "@/hooks/use-i18n";
+import { decimalToBaseUnits } from "@/lib/utils/amount";
+import { validateParsedPayment } from "@/lib/validation/payment";
 
 function PayRouteInner() {
   const { t } = useI18n();
+  const network = useActiveNetworkConfig();
   const searchParams = useSearchParams();
 
-  const to = searchParams.get("to") ?? "";
-  const amount = searchParams.get("amount") ?? "";
-  const note = searchParams.get("note") ?? "";
-  const assetInput = searchParams.get("asset") ?? "31566704";
-  const normalizedAsset = assetInput.toUpperCase();
-  const asset = normalizedAsset === "USDC" || normalizedAsset === "USDCA" ? "31566704" : assetInput;
+  const parsedPayment = useMemo(() => {
+    try {
+      return validateParsedPayment({
+        to: searchParams.get("to"),
+        amount: searchParams.get("amount") ?? undefined,
+        note: searchParams.get("note") ?? undefined,
+        asset: searchParams.get("asset") ?? String(network.usdcAssetId),
+        network: searchParams.get("network") ?? undefined,
+        source: "app_link",
+      }, { usdcAssetId: network.usdcAssetId, networkId: network.id, requireAddress: true });
+    } catch {
+      return null;
+    }
+  }, [network.id, network.usdcAssetId, searchParams]);
 
   const deepLink = useMemo(() => {
-    const params = new URLSearchParams({ asset });
-    if (amount) params.set("amount", amount);
-    if (note) params.set("note", note);
-    return `perawallet://${to}?${params.toString()}`;
-  }, [asset, to, amount, note]);
+    if (!parsedPayment) return "";
+    const params = new URLSearchParams({ asset: String(parsedPayment.assetId) });
+    if (parsedPayment.amount) params.set("amount", decimalToBaseUnits(parsedPayment.amount, 6).toString());
+    if (parsedPayment.note) params.set("note", parsedPayment.note);
+    return `perawallet://${parsedPayment.to}?${params.toString()}`;
+  }, [parsedPayment]);
 
   const androidIntentLink = useMemo(() => {
-    const params = new URLSearchParams({ asset });
-    if (amount) params.set("amount", amount);
-    if (note) params.set("note", note);
+    if (!parsedPayment) return "";
+    const params = new URLSearchParams({ asset: String(parsedPayment.assetId) });
+    if (parsedPayment.amount) params.set("amount", decimalToBaseUnits(parsedPayment.amount, 6).toString());
+    if (parsedPayment.note) params.set("note", parsedPayment.note);
     const fallback = encodeURIComponent("https://play.google.com/store/apps/details?id=com.algorand.android");
-    return `intent://${to}?${params.toString()}#Intent;scheme=perawallet;package=com.algorand.android;S.browser_fallback_url=${fallback};end`;
-  }, [asset, to, amount, note]);
+    return `intent://${parsedPayment.to}?${params.toString()}#Intent;scheme=perawallet;package=com.algorand.android;S.browser_fallback_url=${fallback};end`;
+  }, [parsedPayment]);
 
   const launchLink = useMemo(() => {
     if (typeof navigator === "undefined") return deepLink;
@@ -40,12 +54,12 @@ function PayRouteInner() {
     return isAndroidChrome ? androidIntentLink : deepLink;
   }, [androidIntentLink, deepLink]);
 
-  if (!to) {
+  if (!parsedPayment) {
     return (
       <AppShell>
         <Card className="space-y-3">
           <h1 className="text-xl font-bold">{t("pay.invalidTitle")}</h1>
-          <p className="text-sm text-muted">{t("pay.invalidLink")}</p>
+          <p className="text-sm text-muted">{t("pay.invalidSecureLink")}</p>
         </Card>
       </AppShell>
     );

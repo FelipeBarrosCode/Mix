@@ -6,8 +6,10 @@ import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useActiveNetworkConfig } from "@/hooks/use-active-network";
 import { useI18n } from "@/hooks/use-i18n";
 import { parseMixUri } from "@/features/qr/uri";
+import { NetworkId } from "@/lib/algorand/network";
 import { isAlgoName, isValidAlgorandAddress } from "@/lib/validation/address";
 import { useContactsStore } from "@/stores/contacts-store";
 import { useToast } from "@/hooks/use-toast";
@@ -21,7 +23,7 @@ function short(address: string) {
   return `${address.slice(0, 6)}...${address.slice(-6)}`;
 }
 
-function resolveContactTarget(rawTarget: string) {
+function resolveContactTarget(rawTarget: string, options: { usdcAssetId: number; networkId: NetworkId }) {
   const target = rawTarget.trim();
   if (!target) {
     throw new Error("invalid_target");
@@ -35,7 +37,7 @@ function resolveContactTarget(rawTarget: string) {
     return { address: target, algoName: target };
   }
 
-  const parsed = parseMixUri(target);
+  const parsed = parseMixUri(target, options);
   if (parsed.type !== "pay") {
     throw new Error("invalid_target");
   }
@@ -48,6 +50,7 @@ function resolveContactTarget(rawTarget: string) {
 
 export default function ContactsPage() {
   const { t } = useI18n();
+  const network = useActiveNetworkConfig();
   const { toast } = useToast();
   const contacts = useContactsStore((s) => s.contacts);
   const add = useContactsStore((s) => s.add);
@@ -64,7 +67,7 @@ export default function ContactsPage() {
           className="space-y-2"
           onSubmit={form.handleSubmit((values) => {
             try {
-              const resolved = resolveContactTarget(values.target);
+              const resolved = resolveContactTarget(values.target, { usdcAssetId: network.usdcAssetId, networkId: network.id });
               add({
                 label: values.label.trim(),
                 address: resolved.address,

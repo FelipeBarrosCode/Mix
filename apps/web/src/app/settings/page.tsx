@@ -35,20 +35,20 @@ export default function SettingsPage() {
   async function saveEndpoints() {
     try {
       const nextAlgod = algodEndpoint
-        ? validatePublicHttpsEndpoint(algodEndpoint, "Algod")
+        ? validatePublicHttpsEndpoint(algodEndpoint, t("settings.algodLabel"))
         : null;
       const nextIndexer = indexerEndpoint
-        ? validatePublicHttpsEndpoint(indexerEndpoint, "Indexer")
+        ? validatePublicHttpsEndpoint(indexerEndpoint, t("settings.indexerLabel"))
         : null;
 
       const customTargets = [nextAlgod, nextIndexer].filter((item): item is string => Boolean(item));
       const hasUntrusted = customTargets.some((origin) => !isTrustedEndpoint(origin));
       if (hasUntrusted && !advancedMode) {
-        throw new Error("Custom endpoint host is not in trusted list. Enable advanced mode to continue.");
+        throw new Error(t("settings.untrustedEndpoint"));
       }
 
       if (!nextAlgod && !nextIndexer) {
-        toast({ title: "No endpoint changes to save" });
+        toast({ title: t("settings.noEndpointChanges") });
         return;
       }
 
@@ -69,7 +69,7 @@ export default function SettingsPage() {
       toast({ title: t("settings.saveEndpoints") });
     } catch (error) {
       toast({
-        title: "Invalid endpoint configuration",
+        title: t("settings.invalidEndpointConfiguration"),
         description: error instanceof Error ? error.message : t("common.unknownError"),
         variant: "danger",
       });
@@ -81,7 +81,7 @@ export default function SettingsPage() {
       <div className="space-y-4">
         <Card className="space-y-3">
           <h1 className="text-xl font-bold">{t("nav.settings")}</h1>
-          <p className="text-xs text-muted">{t("settings.currentNetwork")}: {activeConfig.label}</p>
+          <p className="text-xs text-muted">{t("settings.currentNetwork")}: {t(activeConfig.id === "mainnet" ? "settings.mainnet" : "settings.testnet")}</p>
         </Card>
 
         <Card className="space-y-3">
@@ -89,7 +89,7 @@ export default function SettingsPage() {
           <div className="grid grid-cols-3 gap-2">
             {(["en", "pt-BR", "es"] as AppLocale[]).map((item) => (
               <Button key={item} variant={locale === item ? "default" : "secondary"} onClick={() => setLocale(item)}>
-                {item}
+                {t(`settings.locale.${item}`)}
               </Button>
             ))}
           </div>
@@ -97,7 +97,7 @@ export default function SettingsPage() {
           <div className="grid grid-cols-3 gap-2">
             {(["US", "BR", "EU", "LATAM", "GLOBAL"] as AppRegion[]).map((item) => (
               <Button key={item} variant={region === item ? "default" : "secondary"} onClick={() => setRegion(item)}>
-                {item}
+                {t(`settings.region.${item}`)}
               </Button>
             ))}
           </div>
@@ -107,7 +107,7 @@ export default function SettingsPage() {
         <Card className="space-y-2">
           <p className="text-sm font-semibold">{t("settings.customEndpoints")}</p>
           <p className="text-xs text-muted">
-            Trusted hosts: algonode.cloud and nodely.dev. Use advanced mode for any other host.
+            {t("settings.trustedHostsHint")}
           </p>
           <Input
             placeholder={activeConfig.algodEndpoints[0]}
@@ -125,7 +125,7 @@ export default function SettingsPage() {
               checked={advancedMode}
               onChange={(e) => setAdvancedMode(e.target.checked)}
             />
-            Advanced mode: allow non-trusted RPC hosts (higher risk)
+            {t("settings.advancedModeHint")}
           </label>
           <Button
             className="w-full"

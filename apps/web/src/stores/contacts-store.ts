@@ -17,18 +17,19 @@ type ContactsStore = {
 };
 
 const STORAGE_KEY = "Mix-contacts";
-const initial = readJson<Contact[]>(STORAGE_KEY, []);
+const MAX_CONTACTS_AGE_MS = 1000 * 60 * 60 * 24 * 90;
+const initial = readJson<Contact[]>(STORAGE_KEY, [], { maxAgeMs: MAX_CONTACTS_AGE_MS });
 
 export const useContactsStore = create<ContactsStore>((set, get) => ({
   contacts: initial,
   add: (contact) => {
     const contacts = [...get().contacts, { ...contact, id: crypto.randomUUID() }];
     set({ contacts });
-    writeJson(STORAGE_KEY, contacts);
+    writeJson(STORAGE_KEY, contacts, { maxAgeMs: MAX_CONTACTS_AGE_MS });
   },
   remove: (id) => {
     const contacts = get().contacts.filter((c) => c.id !== id);
     set({ contacts });
-    writeJson(STORAGE_KEY, contacts);
+    writeJson(STORAGE_KEY, contacts, { maxAgeMs: MAX_CONTACTS_AGE_MS });
   },
 }));

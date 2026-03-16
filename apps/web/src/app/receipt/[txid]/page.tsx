@@ -40,7 +40,7 @@ export default function ReceiptPage() {
         ) : null}
         <p className="break-all rounded-lg bg-slate-50 p-3 text-xs dark:bg-slate-900">{txid}</p>
         <a className="text-sm text-accent underline" href={explorerUrl} target="_blank" rel="noreferrer">
-          {t("receipt.openExplorer")} {network.label}
+          {t("receipt.openExplorer")} {t(network.id === "mainnet" ? "settings.mainnet" : "settings.testnet")}
         </a>
         <Link href="/home">
           <Button className="w-full">{t("receipt.backHome")}</Button>

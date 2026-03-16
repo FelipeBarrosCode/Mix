@@ -1,9 +1,15 @@
+import { NetworkId } from "@/lib/algorand/network";
+import { PaymentSource } from "@/lib/validation/payment";
 import { create } from "zustand";
 
 export type SendDraft = {
   rawRecipient: string;
   resolvedAddress: string;
   amount: string;
+  assetId: number;
+  networkId: NetworkId | "";
+  source: PaymentSource;
+  validated: boolean;
   note?: string;
 };
 
@@ -17,6 +23,10 @@ const initial: SendDraft = {
   rawRecipient: "",
   resolvedAddress: "",
   amount: "",
+  assetId: 0,
+  networkId: "",
+  source: "manual",
+  validated: false,
   note: "",
 };
 

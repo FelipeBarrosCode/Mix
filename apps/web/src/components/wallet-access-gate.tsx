@@ -7,12 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useI18n } from "@/hooks/use-i18n";
 import { resolveAlgoName } from "@/lib/algorand/nfdOnChain";
+import { toSafeHelpVideoUrl } from "@/lib/utils/help-video";
 import { useToast } from "@/hooks/use-toast";
 import { useProfileStore } from "@/stores/profile-store";
 import { useWalletStore } from "@/stores/wallet-store";
 
 export function WalletAccessGate() {
-  const { t, helpVideoUrl } = useI18n();
+  const { t, helpVideoUrl, locale } = useI18n();
   const { toast } = useToast();
   const connected = useWalletStore((s) => s.connected);
   const activeAddress = useWalletStore((s) => s.activeAddress);
@@ -62,7 +63,7 @@ export function WalletAccessGate() {
           <>
             <p className="text-sm text-muted">{t("gate.introText")}</p>
             <p className="text-xs text-muted">{t("gate.introSafety")}</p>
-            <Button className="w-full" variant="outline" onClick={() => { window.location.href = helpVideoUrl; }}>
+            <Button className="w-full" variant="outline" onClick={() => { window.location.href = toSafeHelpVideoUrl(helpVideoUrl, locale); }}>
               {t("gate.explainHow")}
             </Button>
             <Button className="w-full" onClick={() => connect()} disabled={loadingWallet}>
@@ -80,7 +81,7 @@ export function WalletAccessGate() {
                 <Input
                   value={algoName}
                   onChange={(e) => setAlgoNameInput(e.target.value)}
-                  placeholder="name.algo"
+                  placeholder={t("gate.algoPlaceholder")}
                 />
               </div>
               <Button className="w-full" disabled={verifying} type="submit">

@@ -4,18 +4,22 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/app-shell";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowDownToLine, ArrowLeftRight, ArrowUpToLine, LineChart } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { useWalletStore } from "@/stores/wallet-store";
 import { useAccountSummary } from "@/hooks/use-account-summary";
 import { baseUnitsToDecimal } from "@/lib/utils/amount";
 import { useScheduleStore } from "@/stores/schedule-store";
 import { useHistoryStore } from "@/stores/history-store";
+import { buildHomeReceiveRequestNote, useHomeQrPaymentWatch } from "@/hooks/use-home-qr-payment-watch";
 import { useActiveNetworkConfig } from "@/hooks/use-active-network";
 import { useFxQuote } from "@/hooks/use-fx-quote";
 import { convertUsdcToFiat } from "@/lib/fx/quotes";
 import { formatCurrency, formatDateTimeIso } from "@/lib/utils/format";
+import { resolveExplorerTxUrl } from "@/lib/algorand/network";
 import { fiatFromRegion, usePreferencesStore } from "@/stores/preferences-store";
 import { useI18n } from "@/hooks/use-i18n";
 import { qrToDataUrl } from "@/features/qr/generate";
@@ -27,6 +31,7 @@ function short(addr?: string) {
 
 export default function HomePage() {
   const { t, locale } = useI18n();
+  const { toast } = useToast();
   const connected = useWalletStore((s) => s.connected);
   const activeAddress = useWalletStore((s) => s.activeAddress);
   const connect = useWalletStore((s) => s.connect);
@@ -39,14 +44,41 @@ export default function HomePage() {
   const fiatCurrency = fiatFromRegion(region);
   const quote = useFxQuote();
   const [fixedQr, setFixedQr] = useState("");
+  const [homeQrRequestId, setHomeQrRequestId] = useState("");
+
+  useEffect(() => {
+    if (!activeAddress) {
+      setHomeQrRequestId("");
+      return;
+    }
+    setHomeQrRequestId(crypto.randomUUID());
+  }, [activeAddress, network.id]);
 
   const usdcAmount = baseUnitsToDecimal(summary.data?.usdcMicro ?? 0n, 6);
   const fiatBalance = convertUsdcToFiat(usdcAmount, quote.data);
+  const homeQrRequestNote = useMemo(() => (homeQrRequestId ? buildHomeReceiveRequestNote(homeQrRequestId) : ""), [homeQrRequestId]);
   const receiveAnyAmountLink = useMemo(() => {
-    if (!activeAddress) return "";
-    const params = new URLSearchParams({ asset: String(network.usdcAssetId), amount: "0" });
+    if (!activeAddress || !homeQrRequestNote) return "";
+    const params = new URLSearchParams({ asset: String(network.usdcAssetId), amount: "0", note: homeQrRequestNote });
     return `perawallet://${activeAddress}?${params.toString()}`;
-  }, [activeAddress, network.usdcAssetId]);
+  }, [activeAddress, homeQrRequestNote, network.usdcAssetId]);
+
+  const watch = useHomeQrPaymentWatch({
+    enabled: connected,
+    qrReady: Boolean(fixedQr),
+    receiver: activeAddress,
+    assetId: network.usdcAssetId,
+    requestNote: homeQrRequestNote,
+    indexerEndpoints: network.indexerEndpoints,
+  });
+
+  useEffect(() => {
+    if (watch.status !== "detected" || !watch.payment) return;
+    toast({
+      title: t("home.paymentWatchDetectedTitle"),
+      description: `${watch.payment.amount} USDCa`,
+    });
+  }, [t, toast, watch.payment, watch.status]);
 
   useEffect(() => {
     if (!receiveAnyAmountLink) {
@@ -123,6 +155,34 @@ export default function HomePage() {
           </Card>
         ) : null}
 
+        {connected && fixedQr ? (
+          <Card className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-semibold">{t("home.paymentWatchTitle")}</p>
+              <Badge className={watch.status === "detected" ? "bg-emerald-100 text-emerald-700" : undefined}>{t(`home.paymentWatchStatus.${watch.status}`)}</Badge>
+            </div>
+            <p className="text-xs text-muted">{t("home.paymentWatchSubtitle")}</p>
+            {watch.status === "watching" ? (
+              <p className="text-xs text-muted">
+                {t("home.paymentWatchWatching")} {watch.secondsRemaining} {t("home.paymentWatchSeconds")} - {watch.pollCount} {t("home.paymentWatchChecks")}
+              </p>
+            ) : null}
+            {watch.status === "timed_out" ? <p className="text-xs text-muted">{t("home.paymentWatchTimedOut")}</p> : null}
+            {watch.status === "error" ? <p className="text-xs text-danger">{watch.lastError === watch.unsupportedErrorCode ? t("home.paymentWatchUnsupported") : watch.lastError ?? t("home.paymentWatchError")}</p> : null}
+            {watch.payment ? (
+              <div className="rounded-xl border border-border p-3 text-sm">
+                <p className="font-medium">{watch.payment.amount} USDCa</p>
+                <p className="text-xs text-muted">{t("home.paymentWatchFrom")}: {short(watch.payment.sender)}</p>
+                <p className="text-xs text-muted">{t("home.paymentWatchReceivedAt")}: {formatDateTimeIso(watch.payment.receivedAt, locale)}</p>
+                <p className="break-all text-xs text-muted">{t("home.paymentWatchTxid")}: {watch.payment.txid}</p>
+                <a className="text-xs text-accent underline" href={resolveExplorerTxUrl(network, watch.payment.txid)} rel="noreferrer" target="_blank">
+                  {t("receipt.openExplorer")} {watch.payment.txid.slice(0, 10)}...
+                </a>
+              </div>
+            ) : null}
+          </Card>
+        ) : null}
+
         {drafts.length > 0 ? (
           <Card className="space-y-2">
             <p className="text-sm font-semibold">{t("home.scheduled")}</p>
@@ -133,9 +193,9 @@ export default function HomePage() {
                 <a
                   className="text-accent underline"
                   href={`data:text/calendar;charset=utf-8,${encodeURIComponent(
-                    buildIcs(draft.remindAt, "Mix payment reminder", `Pay ${draft.amount} USDCa to ${draft.to}`),
+                    buildIcs(draft.remindAt, t("home.reminderTitle"), t("home.reminderDescription").replace("{amount}", draft.amount).replace("{to}", draft.to)),
                   )}`}
-                  download="Mix-reminder.ics"
+                  download={t("home.downloadReminderFile")}
                 >
                   {t("home.downloadReminder")}
                 </a>
@@ -149,7 +209,7 @@ export default function HomePage() {
             <p className="text-sm font-semibold">{t("home.recentLocal")}</p>
             {history.slice(0, 5).map((item) => (
               <div key={item.txid} className="rounded-xl border border-border p-2 text-xs">
-                <p className="font-medium">{item.type.replace("_", " ")}</p>
+                <p className="font-medium">{t(`history.type.${item.type}`)}</p>
                 {item.amount ? <p>{item.amount} USDCa</p> : null}
                 <p className="text-muted">{formatDateTimeIso(item.createdAt, locale)}</p>
               </div>

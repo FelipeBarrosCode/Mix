@@ -15,45 +15,7 @@ import { useActiveNetworkConfig } from "@/hooks/use-active-network";
 import { useProfileStore } from "@/stores/profile-store";
 import { WalletAccessGate } from "@/components/wallet-access-gate";
 import { useTrackIncomingUsdc } from "@/hooks/use-track-incoming-usdc";
-
-const defaultHelpVideoByLocale: Record<string, string> = {
-  en: "https://youtu.be/yZkmXeotLPI",
-  es: "https://youtu.be/UoJEmFEkH-A",
-  "pt-BR": "https://youtu.be/8WLNP3onJRQ",
-};
-
-const allowedHelpHosts = new Set(["youtu.be", "youtube.com", "www.youtube.com", "m.youtube.com"]);
-
-function toSafeHelpVideoUrl(input: string, locale: string): string {
-  const fallback = defaultHelpVideoByLocale[locale] ?? defaultHelpVideoByLocale.en;
-  try {
-    const url = new URL(input);
-    if (!allowedHelpHosts.has(url.hostname)) return fallback;
-    if (url.protocol !== "https:") return fallback;
-    return url.toString();
-  } catch {
-    return fallback;
-  }
-}
-
-function toSafeHelpEmbedUrl(input: string, locale: string): string {
-  const safe = toSafeHelpVideoUrl(input, locale);
-  try {
-    const url = new URL(safe);
-    if (url.hostname === "youtu.be") {
-      const id = url.pathname.replace(/^\//, "");
-      return `https://www.youtube.com/embed/${id}`;
-    }
-    if (url.hostname.includes("youtube.com")) {
-      const id = url.searchParams.get("v");
-      if (id) return `https://www.youtube.com/embed/${id}`;
-      if (url.pathname.startsWith("/embed/")) return url.toString();
-    }
-  } catch {
-    return "https://www.youtube.com/embed/yZkmXeotLPI";
-  }
-  return "https://www.youtube.com/embed/yZkmXeotLPI";
-}
+import { toSafeHelpEmbedUrl, toSafeHelpVideoUrl } from "@/lib/utils/help-video";
 
 const mobileNav = [
   { href: "/home", key: "nav.home", icon: Home },
@@ -144,7 +106,7 @@ export function AppShell({ children }: PropsWithChildren) {
 
         <div className="flex min-h-screen flex-1 flex-col">
           <header className="hidden items-center justify-between border-b border-border py-4 lg:flex">
-            <p className="text-sm text-muted">{network.label}</p>
+            <p className="text-sm text-muted">{t(network.id === "mainnet" ? "settings.mainnet" : "settings.testnet")}</p>
             <div className="flex items-center gap-3">
               <button
                 type="button"

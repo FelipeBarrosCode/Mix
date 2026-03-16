@@ -16,18 +16,19 @@ type ScheduleStore = {
 };
 
 const STORAGE_KEY = "Mix-scheduled";
-const initial = readJson<ScheduledDraft[]>(STORAGE_KEY, []);
+const MAX_SCHEDULE_AGE_MS = 1000 * 60 * 60 * 24 * 30;
+const initial = readJson<ScheduledDraft[]>(STORAGE_KEY, [], { maxAgeMs: MAX_SCHEDULE_AGE_MS });
 
 export const useScheduleStore = create<ScheduleStore>((set, get) => ({
   drafts: initial,
   addDraft: (draft) => {
     const drafts = [...get().drafts, { ...draft, id: crypto.randomUUID() }];
     set({ drafts });
-    writeJson(STORAGE_KEY, drafts);
+    writeJson(STORAGE_KEY, drafts, { maxAgeMs: MAX_SCHEDULE_AGE_MS });
   },
   removeDraft: (id) => {
     const drafts = get().drafts.filter((x) => x.id !== id);
     set({ drafts });
-    writeJson(STORAGE_KEY, drafts);
+    writeJson(STORAGE_KEY, drafts, { maxAgeMs: MAX_SCHEDULE_AGE_MS });
   },
 }));

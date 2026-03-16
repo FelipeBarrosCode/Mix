@@ -14,6 +14,7 @@ import { isOptedIntoUsdc } from "@/lib/algorand/usdc";
 import { buildAssetOptInTxn } from "@/lib/algorand/txns";
 import { signAndSend } from "@/lib/algorand/wallet";
 import { isAlgoName, isValidAlgorandAddress } from "@/lib/validation/address";
+import { isPaymentRequestInput, PaymentSource, validatePaymentNote, validatePaymentRecipient } from "@/lib/validation/payment";
 import { useSendStore } from "@/stores/send-store";
 import { useWalletStore } from "@/stores/wallet-store";
 import { useToast } from "@/hooks/use-toast";
@@ -39,6 +40,7 @@ export default function SendPage() {
   const [note, setNote] = useState("");
   const [showScanner, setShowScanner] = useState(false);
   const [scannedValue, setScannedValue] = useState("");
+  const [recipientSource, setRecipientSource] = useState<PaymentSource>("manual");
 
   const region = usePreferencesStore((s) => s.region);
   const fiatCurrency = fiatFromRegion(region);
@@ -52,9 +54,16 @@ export default function SendPage() {
     return raw.toFixed(6).replace(/\.?(0+)$/, "");
   }, [fiatAmount, quote.data]);
 
+  const parseOptions = useMemo(() => ({ usdcAssetId: network.usdcAssetId, networkId: network.id }), [network.id, network.usdcAssetId]);
+
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
-    setRecipient(query.get("to") ?? "");
+    const queryRecipient = query.get("to") ?? "";
+    try {
+      setRecipient(validatePaymentRecipient(queryRecipient, { allowAlgoName: true, requireAddress: false }));
+    } catch {
+      setRecipient(queryRecipient.trim());
+    }
     const requestedUsdc = query.get("amount") ?? "";
     if (requestedUsdc && quote.data) {
       const fiatValue = Number(requestedUsdc) * quote.data.usdToFiat;
@@ -62,7 +71,11 @@ export default function SendPage() {
         setFiatAmount(fiatValue.toFixed(2));
       }
     }
-    setNote(query.get("note") ?? "");
+    try {
+      setNote(validatePaymentNote(query.get("note") ?? "") ?? "");
+    } catch {
+      setNote("");
+    }
   }, [quote.data]);
 
   async function onSubmit() {
@@ -96,18 +109,16 @@ export default function SendPage() {
     try {
       let raw = recipient.trim();
       let amountUsdc = quoteDerivedUsdc;
-      let draftNote = note;
-      if (
-        raw.startsWith("Mix://") ||
-        raw.startsWith("/pay?") ||
-        raw.includes("/pay?") ||
-        raw.startsWith("pera://send?") ||
-        raw.startsWith("algorand://") ||
-        raw.startsWith("algorand:")
-      ) {
-        const parsed = parseMixUri(raw);
+      let draftNote = validatePaymentNote(note);
+      let source: PaymentSource = recipientSource;
+      let assetId = network.usdcAssetId;
+
+      if (isPaymentRequestInput(raw)) {
+        const parsed = parseMixUri(raw, parseOptions);
         if (parsed.type !== "pay") throw new Error(t("send.onlyPayPayload"));
         raw = parsed.to;
+        source = parsed.source;
+        assetId = parsed.assetId;
         if (parsed.amount) {
           amountUsdc = parsed.amount;
           const convertedFiat = convertUsdcToFiat(parsed.amount, quote.data);
@@ -119,6 +130,8 @@ export default function SendPage() {
           draftNote = parsed.note;
           setNote(parsed.note);
         }
+      } else {
+        raw = validatePaymentRecipient(raw, { allowAlgoName: true, requireAddress: false });
       }
       let resolvedAddress = "";
 
@@ -147,6 +160,10 @@ export default function SendPage() {
         rawRecipient: raw,
         resolvedAddress,
         amount: amountUsdc,
+        assetId,
+        networkId: network.id,
+        source,
+        validated: true,
         note: draftNote,
       });
       router.push("/confirm");
@@ -194,7 +211,10 @@ export default function SendPage() {
           </div>
           <div>
             <Label>{t("send.recipientLabel")}</Label>
-            <Input placeholder={t("send.recipientPlaceholder")} value={recipient} onChange={(e) => setRecipient(e.target.value)} />
+            <Input placeholder={t("send.recipientPlaceholder")} value={recipient} onChange={(e) => {
+              setRecipient(e.target.value);
+              setRecipientSource("manual");
+            }} />
           </div>
           <div>
             <Label>{t("send.amountFiatLabel")} ({fiatCurrency})</Label>
@@ -230,7 +250,7 @@ export default function SendPage() {
             <QrScannerView
               onResult={(value) => {
                 try {
-                  const parsed = parseMixUri(value);
+                  const parsed = parseMixUri(value, parseOptions);
                   if (parsed.type !== "pay") {
                     throw new Error(t("send.onlyPayPayload"));
                   }
@@ -243,6 +263,7 @@ export default function SendPage() {
                   }
                   setNote(parsed.note ?? "");
                   setScannedValue(value);
+                  setRecipientSource("scan");
                   setShowScanner(false);
                 } catch {
                   toast({ title: t("scan.invalidPayload"), variant: "danger" });

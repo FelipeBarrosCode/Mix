@@ -10,14 +10,14 @@ import { useI18n } from "@/hooks/use-i18n";
 
 function riskBadgeClass(risk: string) {
   const normalized = risk.toLowerCase();
-  if (normalized.includes("low")) return "bg-emerald-100 text-emerald-800";
-  if (normalized.includes("high")) return "bg-red-100 text-red-800";
+  if (normalized.includes("low") || normalized.includes("baixo") || normalized.includes("bajo")) return "bg-emerald-100 text-emerald-800";
+  if (normalized.includes("high") || normalized.includes("alto")) return "bg-red-100 text-red-800";
   return "bg-amber-100 text-amber-800";
 }
 
 export default function InvestmentsPage() {
-  const { t } = useI18n();
-  const methods = listInvestmentsBySafety();
+  const { t, locale } = useI18n();
+  const methods = listInvestmentsBySafety(locale);
 
   return (
     <AppShell>

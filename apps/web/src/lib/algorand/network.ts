@@ -1,3 +1,5 @@
+import { validatePublicHttpsEndpoint } from "@/lib/algorand/endpoint-validation";
+
 export type NetworkId = "testnet" | "mainnet";
 
 export type NetworkConfig = {
@@ -47,18 +49,19 @@ export const NETWORKS: Record<NetworkId, NetworkConfig> = {
   },
 };
 
-if (process.env.NEXT_PUBLIC_TESTNET_ALGOD) {
-  NETWORKS.testnet.algodEndpoints.unshift(process.env.NEXT_PUBLIC_TESTNET_ALGOD);
+function prependValidatedEndpoint(target: string[], raw: string | undefined, label: string) {
+  if (!raw) return;
+  try {
+    target.unshift(validatePublicHttpsEndpoint(raw, label));
+  } catch {
+    return;
+  }
 }
-if (process.env.NEXT_PUBLIC_TESTNET_INDEXER) {
-  NETWORKS.testnet.indexerEndpoints.unshift(process.env.NEXT_PUBLIC_TESTNET_INDEXER);
-}
-if (process.env.NEXT_PUBLIC_MAINNET_ALGOD) {
-  NETWORKS.mainnet.algodEndpoints.unshift(process.env.NEXT_PUBLIC_MAINNET_ALGOD);
-}
-if (process.env.NEXT_PUBLIC_MAINNET_INDEXER) {
-  NETWORKS.mainnet.indexerEndpoints.unshift(process.env.NEXT_PUBLIC_MAINNET_INDEXER);
-}
+
+prependValidatedEndpoint(NETWORKS.testnet.algodEndpoints, process.env.NEXT_PUBLIC_TESTNET_ALGOD, "Testnet algod");
+prependValidatedEndpoint(NETWORKS.testnet.indexerEndpoints, process.env.NEXT_PUBLIC_TESTNET_INDEXER, "Testnet indexer");
+prependValidatedEndpoint(NETWORKS.mainnet.algodEndpoints, process.env.NEXT_PUBLIC_MAINNET_ALGOD, "Mainnet algod");
+prependValidatedEndpoint(NETWORKS.mainnet.indexerEndpoints, process.env.NEXT_PUBLIC_MAINNET_INDEXER, "Mainnet indexer");
 
 export function resolveExplorerTxUrl(config: NetworkConfig, txid: string) {
   return `${config.explorerBaseUrl}/transaction/${txid}`;

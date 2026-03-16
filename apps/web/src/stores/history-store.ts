@@ -15,13 +15,14 @@ type HistoryStore = {
 };
 
 const STORAGE_KEY = "Mix-history";
-const initial = readJson<HistoryItem[]>(STORAGE_KEY, []);
+const MAX_HISTORY_AGE_MS = 1000 * 60 * 60 * 24 * 30;
+const initial = readJson<HistoryItem[]>(STORAGE_KEY, [], { maxAgeMs: MAX_HISTORY_AGE_MS });
 
 export const useHistoryStore = create<HistoryStore>((set, get) => ({
   items: initial,
   push: (item) => {
     const items = [item, ...get().items].slice(0, 50);
     set({ items });
-    writeJson(STORAGE_KEY, items);
+    writeJson(STORAGE_KEY, items, { maxAgeMs: MAX_HISTORY_AGE_MS });
   },
 }));

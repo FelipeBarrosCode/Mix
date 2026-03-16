@@ -5,11 +5,13 @@ import { AppShell } from "@/components/app-shell";
 import { Card } from "@/components/ui/card";
 import { QrScannerView } from "@/features/qr/scanner";
 import { parseMixUri } from "@/features/qr/uri";
+import { useActiveNetworkConfig } from "@/hooks/use-active-network";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/hooks/use-i18n";
 
 export default function ScanPage() {
   const { t } = useI18n();
+  const network = useActiveNetworkConfig();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -20,7 +22,7 @@ export default function ScanPage() {
         <QrScannerView
           onResult={(value) => {
             try {
-              const parsed = parseMixUri(value);
+              const parsed = parseMixUri(value, { usdcAssetId: network.usdcAssetId, networkId: network.id });
               if (parsed.type === "pay") {
                 const params = new URLSearchParams();
                 params.set("to", parsed.to);
