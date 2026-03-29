@@ -11,7 +11,7 @@ import { useHistoryStore } from "@/stores/history-store";
 import { useFxQuote } from "@/hooks/use-fx-quote";
 import { convertUsdcToFiat } from "@/lib/fx/quotes";
 import { formatCurrency } from "@/lib/utils/format";
-import { fiatFromRegion, usePreferencesStore } from "@/stores/preferences-store";
+import { usePreferencesStore } from "@/stores/preferences-store";
 import { useI18n } from "@/hooks/use-i18n";
 
 export default function ReceiptPage() {
@@ -21,8 +21,7 @@ export default function ReceiptPage() {
   const explorerUrl = resolveExplorerTxUrl(network, txid);
   const history = useHistoryStore((s) => s.items);
   const item = history.find((x) => x.txid === txid);
-  const region = usePreferencesStore((s) => s.region);
-  const fiatCurrency = fiatFromRegion(region);
+  const fiatCurrency = usePreferencesStore((s) => s.fiatCurrency);
   const quote = useFxQuote();
 
   return (

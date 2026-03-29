@@ -3,7 +3,8 @@ import type { AppLocale, FiatCurrency } from "@/stores/preferences-store";
 function mapLocale(locale: AppLocale) {
   if (locale === "pt-BR") return "pt-BR";
   if (locale === "es") return "es-419";
-  return "en-US";
+  if (locale === "en") return "en-US";
+  return locale;
 }
 
 export function formatCurrency(value: number, currency: FiatCurrency, locale: AppLocale) {

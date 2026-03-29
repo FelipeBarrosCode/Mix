@@ -1,6 +1,36 @@
-export type I18nLocale = "en" | "pt-BR" | "es";
+export const LANGUAGE_OPTIONS = [
+  { code: "en", name: "English", nativeName: "English" },
+  { code: "zh-CN", name: "Mandarin Chinese", nativeName: "Chinese (Simplified)" },
+  { code: "hi", name: "Hindi", nativeName: "Hindi" },
+  { code: "es", name: "Spanish", nativeName: "Espanol" },
+  { code: "fr", name: "French", nativeName: "Francais" },
+  { code: "ar", name: "Arabic", nativeName: "Arabic" },
+  { code: "bn", name: "Bengali", nativeName: "Bangla" },
+  { code: "pt-BR", name: "Portuguese (Brazil)", nativeName: "Portugues (Brasil)" },
+  { code: "ru", name: "Russian", nativeName: "Russian" },
+  { code: "ur", name: "Urdu", nativeName: "Urdu" },
+] as const;
+
+export type I18nLocale = typeof LANGUAGE_OPTIONS[number]["code"];
 export type I18nRegion = "US" | "BR" | "EU" | "LATAM" | "GLOBAL";
-export type I18nFiatCurrency = "USD" | "BRL" | "EUR";
+
+export const CURRENCY_OPTIONS = [
+  { code: "USD", name: "US Dollar", symbol: "$" },
+  { code: "EUR", name: "Euro", symbol: "EUR" },
+  { code: "JPY", name: "Japanese Yen", symbol: "JPY" },
+  { code: "GBP", name: "British Pound Sterling", symbol: "GBP" },
+  { code: "CNY", name: "Chinese Yuan", symbol: "CNY" },
+  { code: "CAD", name: "Canadian Dollar", symbol: "CAD" },
+  { code: "AUD", name: "Australian Dollar", symbol: "AUD" },
+  { code: "CHF", name: "Swiss Franc", symbol: "CHF" },
+  { code: "INR", name: "Indian Rupee", symbol: "INR" },
+  { code: "BRL", name: "Brazilian Real", symbol: "BRL" },
+] as const;
+
+export type I18nFiatCurrency = typeof CURRENCY_OPTIONS[number]["code"];
+
+const LOCALE_CODES = new Set<I18nLocale>(LANGUAGE_OPTIONS.map((item) => item.code));
+const FIAT_CODES = new Set<I18nFiatCurrency>(CURRENCY_OPTIONS.map((item) => item.code));
 
 const EU_COUNTRIES = new Set([
   "AT",
@@ -69,7 +99,11 @@ export function regionFromCountryCode(countryCode: string | null | undefined): I
 }
 
 export function isLocale(value: string | null | undefined): value is I18nLocale {
-  return value === "en" || value === "pt-BR" || value === "es";
+  return LOCALE_CODES.has((value ?? "") as I18nLocale);
+}
+
+export function isFiatCurrency(value: string | null | undefined): value is I18nFiatCurrency {
+  return FIAT_CODES.has((value ?? "") as I18nFiatCurrency);
 }
 
 export function isRegion(value: string | null | undefined): value is I18nRegion {

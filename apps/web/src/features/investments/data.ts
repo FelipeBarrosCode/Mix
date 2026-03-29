@@ -20,7 +20,7 @@ export type InvestmentMethod = {
   safetyOrder: number;
 };
 
-const INVESTMENT_METHODS_BY_LOCALE: Record<AppLocale, InvestmentMethod[]> = {
+const INVESTMENT_METHODS_BY_LOCALE: Partial<Record<AppLocale, InvestmentMethod[]>> & { en: InvestmentMethod[] } = {
   en: [
     {
       slug: "governance-rewards",

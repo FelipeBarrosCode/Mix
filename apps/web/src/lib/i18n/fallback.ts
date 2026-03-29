@@ -1,6 +1,6 @@
 import { I18nLocale } from "@/lib/i18n/locale";
 
-export const fallbackMessages: Record<I18nLocale, Record<string, string>> = {
+export const fallbackMessages: Partial<Record<I18nLocale, Record<string, string>>> & { en: Record<string, string> } = {
   en: {
     "common.unknownError": "Unknown error",
     "nav.home": "Home",

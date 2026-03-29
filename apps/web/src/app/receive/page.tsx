@@ -11,7 +11,7 @@ import { qrToDataUrl } from "@/features/qr/generate";
 import { useActiveNetworkConfig } from "@/hooks/use-active-network";
 import { useFxQuote } from "@/hooks/use-fx-quote";
 import { decimalToBaseUnits } from "@/lib/utils/amount";
-import { fiatFromRegion, usePreferencesStore } from "@/stores/preferences-store";
+import { usePreferencesStore } from "@/stores/preferences-store";
 import { useWalletStore } from "@/stores/wallet-store";
 import { useI18n } from "@/hooks/use-i18n";
 
@@ -19,8 +19,7 @@ export default function ReceivePage() {
   const { t, locale } = useI18n();
   const activeAddress = useWalletStore((s) => s.activeAddress);
   const network = useActiveNetworkConfig();
-  const region = usePreferencesStore((s) => s.region);
-  const fiatCurrency = fiatFromRegion(region);
+  const fiatCurrency = usePreferencesStore((s) => s.fiatCurrency);
   const quote = useFxQuote();
   const [fiatAmount, setFiatAmount] = useState("");
   const [qr, setQr] = useState("");

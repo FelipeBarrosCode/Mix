@@ -1,0 +1,18 @@
+2026-03-29 04:13:55,118 - root - INFO - STDIO MODE: Logging configured - all logs redirected to ./.opencode/chroma-logs/chroma_mcp_stdio_1774782835.log
+2026-03-29 04:13:55,118 - chromamcp.unconfigured - WARNING - Logger requested before main configuration.
+2026-03-29 04:13:55,118 - root - INFO - Log retention policy set to 7 days
+2026-03-29 04:13:55,120 - root - INFO - Cleaned up 2 log files older than 7 days
+2026-03-29 04:13:55,120 - root - INFO - Monkey patched logging.getLogger to ensure all future loggers use file output only
+2026-03-29 04:13:55,124 - chromamcp.utils.set_server_config - INFO - Global server config set: ChromaClientConfig(client_type='persistent', embedding_function_name='default', data_dir='./.opencode/chroma-data', host=None, port=8000, ssl=True, tenant=None, database=None, api_key=None, use_cpu_provider=None)
+2026-03-29 04:13:55,124 - chromamcp - INFO - Chroma client configuration set: persistent
+2026-03-29 04:13:55,124 - chromamcp.utils.chroma_client - INFO - Instantiating embedding function: 'default'
+2026-03-29 04:13:55,141 - chromamcp.utils.chroma_client - INFO - Successfully instantiated embedding function: 'default'
+2026-03-29 04:13:55,141 - chromamcp - INFO - Initializing persistent ChromaDB client at: ./.opencode/chroma-data
+2026-03-29 04:13:55,282 - chromamcp - INFO - Ensuring essential ChromaDB collections exist...
+2026-03-29 04:13:55,288 - chromamcp - INFO - ChromaDB client (persistent) initialized successfully.
+2026-03-29 04:13:55,288 - chromamcp - INFO - Server configured (CPU provider: auto-detected)
+2026-03-29 04:13:55,288 - chromamcp - INFO - Logs will be saved to: /Users/felipebarros/Documents/CodingProjects/mix-webApp/apps/./.opencode/chroma-logs
+2026-03-29 04:13:55,289 - chromamcp - INFO - Chroma MCP server v0.2.28 started. Using stdio transport.
+2026-03-29 04:13:55,296 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2026-03-29 04:13:55,304 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2026-03-29 04:13:55,305 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest

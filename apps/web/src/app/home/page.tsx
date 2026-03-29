@@ -20,7 +20,7 @@ import { useFxQuote } from "@/hooks/use-fx-quote";
 import { convertUsdcToFiat } from "@/lib/fx/quotes";
 import { formatCurrency, formatDateTimeIso } from "@/lib/utils/format";
 import { resolveExplorerTxUrl } from "@/lib/algorand/network";
-import { fiatFromRegion, usePreferencesStore } from "@/stores/preferences-store";
+import { usePreferencesStore } from "@/stores/preferences-store";
 import { useI18n } from "@/hooks/use-i18n";
 import { qrToDataUrl } from "@/features/qr/generate";
 
@@ -40,8 +40,7 @@ export default function HomePage() {
   const network = useActiveNetworkConfig();
   const drafts = useScheduleStore((s) => s.drafts);
   const history = useHistoryStore((s) => s.items);
-  const region = usePreferencesStore((s) => s.region);
-  const fiatCurrency = fiatFromRegion(region);
+  const fiatCurrency = usePreferencesStore((s) => s.fiatCurrency);
   const quote = useFxQuote();
   const [fixedQr, setFixedQr] = useState("");
   const [homeQrRequestId, setHomeQrRequestId] = useState("");

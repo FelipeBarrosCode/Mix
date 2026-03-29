@@ -23,7 +23,7 @@ import { QrScannerView } from "@/features/qr/scanner";
 import { useActiveNetworkConfig } from "@/hooks/use-active-network";
 import { useFxQuote } from "@/hooks/use-fx-quote";
 import { convertUsdcToFiat } from "@/lib/fx/quotes";
-import { fiatFromRegion, usePreferencesStore } from "@/stores/preferences-store";
+import { usePreferencesStore } from "@/stores/preferences-store";
 import { useI18n } from "@/hooks/use-i18n";
 
 export default function SendPage() {
@@ -42,8 +42,7 @@ export default function SendPage() {
   const [scannedValue, setScannedValue] = useState("");
   const [recipientSource, setRecipientSource] = useState<PaymentSource>("manual");
 
-  const region = usePreferencesStore((s) => s.region);
-  const fiatCurrency = fiatFromRegion(region);
+  const fiatCurrency = usePreferencesStore((s) => s.fiatCurrency);
   const quote = useFxQuote();
 
   const usdcAmount = useMemo(() => {

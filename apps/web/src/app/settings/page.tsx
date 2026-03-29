@@ -16,7 +16,8 @@ import {
 } from "@/lib/algorand/endpoint-validation";
 import { useNetworkStore } from "@/stores/network-store";
 import { useActiveNetworkConfig } from "@/hooks/use-active-network";
-import { AppLocale, AppRegion, fiatFromRegion, usePreferencesStore } from "@/stores/preferences-store";
+import { CURRENCY_OPTIONS, LANGUAGE_OPTIONS } from "@/lib/i18n/locale";
+import { AppLocale, AppRegion, usePreferencesStore } from "@/stores/preferences-store";
 import { useI18n } from "@/hooks/use-i18n";
 
 export default function SettingsPage() {
@@ -31,6 +32,8 @@ export default function SettingsPage() {
   const setLocale = usePreferencesStore((s) => s.setLocale);
   const region = usePreferencesStore((s) => s.region);
   const setRegion = usePreferencesStore((s) => s.setRegion);
+  const fiatCurrency = usePreferencesStore((s) => s.fiatCurrency);
+  const setFiatCurrency = usePreferencesStore((s) => s.setFiatCurrency);
 
   async function saveEndpoints() {
     try {
@@ -86,10 +89,10 @@ export default function SettingsPage() {
 
         <Card className="space-y-3">
           <p className="text-sm font-semibold">{t("settings.language")}</p>
-          <div className="grid grid-cols-3 gap-2">
-            {(["en", "pt-BR", "es"] as AppLocale[]).map((item) => (
-              <Button key={item} variant={locale === item ? "default" : "secondary"} onClick={() => setLocale(item)}>
-                {t(`settings.locale.${item}`)}
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
+            {LANGUAGE_OPTIONS.map((item) => (
+              <Button key={item.code} variant={locale === item.code ? "default" : "secondary"} onClick={() => setLocale(item.code as AppLocale)}>
+                {item.name}
               </Button>
             ))}
           </div>
@@ -101,7 +104,15 @@ export default function SettingsPage() {
               </Button>
             ))}
           </div>
-          <p className="text-xs text-muted">{t("settings.fiat")}: {fiatFromRegion(region)}</p>
+          <p className="text-sm font-semibold">{t("settings.fiat")}</p>
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
+            {CURRENCY_OPTIONS.map((item) => (
+              <Button key={item.code} variant={fiatCurrency === item.code ? "default" : "secondary"} onClick={() => setFiatCurrency(item.code)}>
+                {item.code}
+              </Button>
+            ))}
+          </div>
+          <p className="text-xs text-muted">{fiatCurrency}</p>
         </Card>
 
         <Card className="space-y-2">

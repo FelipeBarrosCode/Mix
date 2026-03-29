@@ -19,7 +19,7 @@ import { useActiveNetworkConfig } from "@/hooks/use-active-network";
 import { useFxQuote } from "@/hooks/use-fx-quote";
 import { convertUsdcToFiat } from "@/lib/fx/quotes";
 import { formatCurrency } from "@/lib/utils/format";
-import { fiatFromRegion, usePreferencesStore } from "@/stores/preferences-store";
+import { usePreferencesStore } from "@/stores/preferences-store";
 import { useI18n } from "@/hooks/use-i18n";
 import { validatePaymentAmount, validatePaymentNote } from "@/lib/validation/payment";
 
@@ -38,8 +38,7 @@ export default function ConfirmPage() {
   const pushHistory = useHistoryStore((s) => s.push);
   const [loading, setLoading] = useState(false);
   const [confirmedReview, setConfirmedReview] = useState(false);
-  const region = usePreferencesStore((s) => s.region);
-  const fiatCurrency = fiatFromRegion(region);
+  const fiatCurrency = usePreferencesStore((s) => s.fiatCurrency);
   const quote = useFxQuote();
 
   const amountBase = useMemo(() => {

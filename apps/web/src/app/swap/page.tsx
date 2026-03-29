@@ -19,7 +19,7 @@ import { signTransactions } from "@/lib/algorand/wallet";
 import { baseUnitsToDecimal, decimalToBaseUnits } from "@/lib/utils/amount";
 import { formatCurrency } from "@/lib/utils/format";
 import { qrToDataUrl } from "@/features/qr/generate";
-import { fiatFromRegion, usePreferencesStore } from "@/stores/preferences-store";
+import { usePreferencesStore } from "@/stores/preferences-store";
 import { useWalletStore } from "@/stores/wallet-store";
 
 export default function SwapPage() {
@@ -28,8 +28,7 @@ export default function SwapPage() {
   const connected = useWalletStore((s) => s.connected);
   const connect = useWalletStore((s) => s.connect);
   const { toast } = useToast();
-  const region = usePreferencesStore((s) => s.region);
-  const fiatCurrency = fiatFromRegion(region);
+  const fiatCurrency = usePreferencesStore((s) => s.fiatCurrency);
   const network = useActiveNetworkConfig();
   const quote = useFxQuote();
   const assetsQuery = useWalletAssets(activeAddress);

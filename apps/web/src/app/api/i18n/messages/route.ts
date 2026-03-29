@@ -1,6 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { messages } from "@/lib/i18n/messages";
-import { I18nLocale, I18nRegion, fiatFromRegion, isLocale, isRegion, localeFromRegion, regionFromCountryCode, regionFromGeoCoordinates } from "@/lib/i18n/locale";
+import {
+  CURRENCY_OPTIONS,
+  I18nLocale,
+  I18nRegion,
+  LANGUAGE_OPTIONS,
+  fiatFromRegion,
+  isFiatCurrency,
+  isLocale,
+  isRegion,
+  localeFromRegion,
+  regionFromCountryCode,
+  regionFromGeoCoordinates,
+} from "@/lib/i18n/locale";
 
 const configuredOriginRaw = process.env.NEXT_PUBLIC_APP_ORIGIN ?? process.env.APP_ORIGIN ?? "";
 
@@ -19,7 +31,7 @@ function normalizeOrigin(value: string): string {
 
 const configuredOrigin = normalizeOrigin(configuredOriginRaw);
 
-const helpVideoByLocale: Record<I18nLocale, string> = {
+const helpVideoByLocale: Partial<Record<I18nLocale, string>> = {
   en: "https://youtu.be/yZkmXeotLPI",
   es: "https://youtu.be/UoJEmFEkH-A",
   "pt-BR": "https://youtu.be/8WLNP3onJRQ",
@@ -28,7 +40,14 @@ const helpVideoByLocale: Record<I18nLocale, string> = {
 function localeFromAcceptLanguage(value: string | null): I18nLocale {
   const lower = (value ?? "").toLowerCase();
   if (lower.includes("pt")) return "pt-BR";
+  if (lower.includes("zh")) return "zh-CN";
+  if (lower.includes("hi")) return "hi";
   if (lower.includes("es")) return "es";
+  if (lower.includes("fr")) return "fr";
+  if (lower.includes("ar")) return "ar";
+  if (lower.includes("bn")) return "bn";
+  if (lower.includes("ru")) return "ru";
+  if (lower.includes("ur")) return "ur";
   return "en";
 }
 
@@ -60,6 +79,16 @@ function resolveLocale(req: NextRequest, region: I18nRegion): I18nLocale {
   return localeFromAcceptLanguage(req.headers.get("accept-language"));
 }
 
+function resolveFiatCurrency(req: NextRequest, region: I18nRegion) {
+  const queryCurrency = req.nextUrl.searchParams.get("fiatCurrency");
+  if (isFiatCurrency(queryCurrency)) return queryCurrency;
+
+  const headerCurrency = req.headers.get("x-user-fiat-currency");
+  if (isFiatCurrency(headerCurrency)) return headerCurrency;
+
+  return fiatFromRegion(region);
+}
+
 function getAllowedOrigin(req: NextRequest): string | null {
   const origin = req.headers.get("origin");
   if (!origin) return null;
@@ -72,7 +101,7 @@ function corsHeaders(allowedOrigin: string | null): Record<string, string> {
   return {
     "Access-Control-Allow-Origin": allowedOrigin,
     "Access-Control-Allow-Methods": "GET, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, X-User-Locale, X-User-Region, X-User-Geo-Lat, X-User-Geo-Lng",
+    "Access-Control-Allow-Headers": "Content-Type, X-User-Locale, X-User-Region, X-User-Fiat-Currency, X-User-Geo-Lat, X-User-Geo-Lng",
   };
 }
 
@@ -99,19 +128,22 @@ export async function GET(req: NextRequest) {
 
   const region = resolveRegion(req);
   const locale = resolveLocale(req, region);
+  const fiatCurrency = resolveFiatCurrency(req, region);
   return NextResponse.json(
     {
       locale,
       region,
-      fiatCurrency: fiatFromRegion(region),
-      helpVideoUrl: helpVideoByLocale[locale],
+      fiatCurrency,
+      helpVideoUrl: helpVideoByLocale[locale] ?? helpVideoByLocale.en,
+      supportedLocales: LANGUAGE_OPTIONS,
+      supportedCurrencies: CURRENCY_OPTIONS,
       messages: messages[locale] ?? messages.en,
     },
     {
       headers: {
         ...corsHeaders(allowedOrigin),
         "Cache-Control": "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400",
-        Vary: "Origin, Accept-Language, X-User-Locale, X-User-Region, X-User-Geo-Lat, X-User-Geo-Lng, CF-IPCountry, X-Vercel-IP-Country",
+        Vary: "Origin, Accept-Language, X-User-Locale, X-User-Region, X-User-Fiat-Currency, X-User-Geo-Lat, X-User-Geo-Lng, CF-IPCountry, X-Vercel-IP-Country",
       },
     },
   );

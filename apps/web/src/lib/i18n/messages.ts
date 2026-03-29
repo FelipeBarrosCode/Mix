@@ -1,6 +1,6 @@
 import type { AppLocale } from "@/stores/preferences-store";
 
-export const messages: Record<AppLocale, Record<string, string>> = {
+export const messages: Partial<Record<AppLocale, Record<string, string>>> & { en: Record<string, string> } = {
   en: {
     "common.unknownError": "Unknown error",
 
