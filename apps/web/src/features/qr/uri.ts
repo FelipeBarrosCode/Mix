@@ -9,6 +9,16 @@ type ParseMixUriOptions = {
 
 export type ParsedUri = ParsedPaymentRequest;
 
+function decodeParamIfNeeded(value: string, expectedPrefix: string): string {
+  const trimmed = value.trim();
+  if (trimmed.startsWith(expectedPrefix)) return trimmed;
+  try {
+    return decodeURIComponent(trimmed);
+  } catch {
+    return trimmed;
+  }
+}
+
 export function parseMixUri(input: string, options: ParseMixUriOptions): ParsedUri {
   const text = input.trim();
 
@@ -34,6 +44,18 @@ export function parseMixUri(input: string, options: ParseMixUriOptions): ParsedU
       network: params.get("network") ?? undefined,
       source: "app_link",
     }, options);
+  }
+
+  if (text.includes("/connect/pera?") || text.startsWith("/connect/pera?")) {
+    const params = new URLSearchParams(text.split("?")[1] ?? "");
+    const rawLink = params.get("link");
+    if (rawLink) {
+      const decodedLink = decodeParamIfNeeded(rawLink, "perawallet://");
+      if (decodedLink.startsWith("perawallet://")) {
+        return parseMixUri(decodedLink, options);
+      }
+    }
+    throw new Error("Unsupported connect payload");
   }
 
   if (text.startsWith("pera://send?")) {

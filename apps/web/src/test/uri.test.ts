@@ -39,6 +39,14 @@ describe("Mix URI", () => {
     expect(parsed).toEqual({ type: "pay", to: address, assetId: 31566704, amount: "3.25", source: "perawallet_uri" });
   });
 
+  it("parses canonical connect link with encoded perawallet deeplink", () => {
+    const address = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ";
+    const deepLink = `perawallet://${address}?asset=31566704&amount=3250000&note=coffee`;
+    const encoded = encodeURIComponent(deepLink);
+    const parsed = parseMixUri(`https://mix.app/connect/pera?link=${encoded}`, parseOptions);
+    expect(parsed).toEqual({ type: "pay", to: address, assetId: 31566704, amount: "3.25", note: "coffee", source: "perawallet_uri" });
+  });
+
   it("rejects asset mismatches for the active network", () => {
     const address = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ";
     expect(() => parseMixUri(`perawallet://${address}?asset=10458941&amount=3250000`, parseOptions)).toThrow(/Unsupported asset/);

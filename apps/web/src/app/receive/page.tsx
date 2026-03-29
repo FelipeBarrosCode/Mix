@@ -11,18 +11,25 @@ import { qrToDataUrl } from "@/features/qr/generate";
 import { useActiveNetworkConfig } from "@/hooks/use-active-network";
 import { useFxQuote } from "@/hooks/use-fx-quote";
 import { decimalToBaseUnits } from "@/lib/utils/amount";
+import { buildPeraDeepLink, buildPeraRedirectLink } from "@/lib/utils/pera-link";
 import { usePreferencesStore } from "@/stores/preferences-store";
 import { useWalletStore } from "@/stores/wallet-store";
 import { useI18n } from "@/hooks/use-i18n";
 
 export default function ReceivePage() {
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   const activeAddress = useWalletStore((s) => s.activeAddress);
   const network = useActiveNetworkConfig();
   const fiatCurrency = usePreferencesStore((s) => s.fiatCurrency);
   const quote = useFxQuote();
   const [fiatAmount, setFiatAmount] = useState("");
   const [qr, setQr] = useState("");
+  const [origin, setOrigin] = useState("");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setOrigin(window.location.origin);
+  }, []);
 
   const usdcAmount = useMemo(() => {
     const numeric = Number(fiatAmount || 0);
@@ -33,25 +40,32 @@ export default function ReceivePage() {
   }, [fiatAmount, quote.data]);
 
   const target = useMemo(() => activeAddress || "", [activeAddress]);
-  const shareLink = useMemo(() => {
+  const deepLink = useMemo(() => {
     if (!target) return "";
-    const params = new URLSearchParams({ asset: String(network.usdcAssetId) });
     const normalizedAmount = usdcAmount.trim();
     if (normalizedAmount) {
       try {
         const baseUnits = decimalToBaseUnits(normalizedAmount, 6);
-        params.set("amount", baseUnits.toString());
+        return buildPeraDeepLink({
+          address: target,
+          assetId: network.usdcAssetId,
+          amountBaseUnits: baseUnits.toString(),
+        });
       } catch {
         return "";
       }
-    } else {
-      params.set("amount", "0");
     }
-    return `perawallet://${target}?${params.toString()}`;
+    return buildPeraDeepLink({ address: target, assetId: network.usdcAssetId, amountBaseUnits: "0" });
   }, [usdcAmount, network.usdcAssetId, target]);
 
+  const shareLink = useMemo(() => {
+    if (!deepLink) return "";
+    const resolvedOrigin = origin || (typeof window !== "undefined" ? window.location.origin : undefined);
+    return buildPeraRedirectLink({ deepLink, origin: resolvedOrigin });
+  }, [deepLink, origin]);
+
   useEffect(() => {
-    if (!target) {
+    if (!target || !shareLink) {
       setQr("");
       return;
     }
@@ -81,10 +95,11 @@ export default function ReceivePage() {
               variant="secondary"
               className="w-full"
               onClick={() => navigator.clipboard.writeText(shareLink)}
+              disabled={!shareLink}
             >
               {t("receive.copyLink")}
             </Button>
-            <a href={shareLink}>
+            <a href={shareLink || deepLink}>
               <Button className="w-full">{t("receive.openInPera")}</Button>
             </a>
           </div>

@@ -23,6 +23,7 @@ import { resolveExplorerTxUrl } from "@/lib/algorand/network";
 import { usePreferencesStore } from "@/stores/preferences-store";
 import { useI18n } from "@/hooks/use-i18n";
 import { qrToDataUrl } from "@/features/qr/generate";
+import { buildPeraDeepLink, buildPeraRedirectLink } from "@/lib/utils/pera-link";
 
 function short(addr?: string) {
   if (!addr) return "";
@@ -44,6 +45,12 @@ export default function HomePage() {
   const quote = useFxQuote();
   const [fixedQr, setFixedQr] = useState("");
   const [homeQrRequestId, setHomeQrRequestId] = useState("");
+  const [origin, setOrigin] = useState("");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setOrigin(window.location.origin);
+  }, []);
 
   useEffect(() => {
     if (!activeAddress) {
@@ -56,11 +63,21 @@ export default function HomePage() {
   const usdcAmount = baseUnitsToDecimal(summary.data?.usdcMicro ?? 0n, 6);
   const fiatBalance = convertUsdcToFiat(usdcAmount, quote.data);
   const homeQrRequestNote = useMemo(() => (homeQrRequestId ? buildHomeReceiveRequestNote(homeQrRequestId) : ""), [homeQrRequestId]);
-  const receiveAnyAmountLink = useMemo(() => {
+  const receiveAnyAmountDeepLink = useMemo(() => {
     if (!activeAddress || !homeQrRequestNote) return "";
-    const params = new URLSearchParams({ asset: String(network.usdcAssetId), amount: "0", note: homeQrRequestNote });
-    return `perawallet://${activeAddress}?${params.toString()}`;
+    return buildPeraDeepLink({
+      address: activeAddress,
+      assetId: network.usdcAssetId,
+      amountBaseUnits: "0",
+      note: homeQrRequestNote,
+    });
   }, [activeAddress, homeQrRequestNote, network.usdcAssetId]);
+
+  const receiveAnyAmountLink = useMemo(() => {
+    if (!receiveAnyAmountDeepLink) return "";
+    const resolvedOrigin = origin || (typeof window !== "undefined" ? window.location.origin : undefined);
+    return buildPeraRedirectLink({ deepLink: receiveAnyAmountDeepLink, origin: resolvedOrigin });
+  }, [origin, receiveAnyAmountDeepLink]);
 
   const watch = useHomeQrPaymentWatch({
     enabled: connected,

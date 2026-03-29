@@ -58,23 +58,26 @@ function detectDevice(userAgent: string): DeviceKind {
   return "desktop";
 }
 
-function safeDecode(value: string): string {
+function decodeParamIfNeeded(value: string, expectedPrefix: string): string {
+  const trimmed = value.trim();
+  if (trimmed.startsWith(expectedPrefix)) return trimmed;
+
   try {
-    return decodeURIComponent(value);
+    return decodeURIComponent(trimmed);
   } catch {
-    return value;
+    return trimmed;
   }
 }
 
 function normalizeWalletConnectUri(rawUri: string | null): string | null {
   if (!rawUri) return null;
-  const decoded = safeDecode(rawUri).trim();
+  const decoded = decodeParamIfNeeded(rawUri, "wc:");
   return decoded.startsWith("wc:") ? decoded : null;
 }
 
 function normalizeDeepLink(rawLink: string | null): string | null {
   if (!rawLink) return null;
-  const decoded = safeDecode(rawLink).trim();
+  const decoded = decodeParamIfNeeded(rawLink, "perawallet://");
 
   if (!decoded.startsWith("perawallet://")) return null;
 

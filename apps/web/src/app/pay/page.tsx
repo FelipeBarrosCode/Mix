@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useMemo } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
@@ -8,12 +8,19 @@ import { Card } from "@/components/ui/card";
 import { useActiveNetworkConfig } from "@/hooks/use-active-network";
 import { useI18n } from "@/hooks/use-i18n";
 import { decimalToBaseUnits } from "@/lib/utils/amount";
+import { buildPeraDeepLink, buildPeraRedirectLink } from "@/lib/utils/pera-link";
 import { validateParsedPayment } from "@/lib/validation/payment";
 
 function PayRouteInner() {
   const { t } = useI18n();
   const network = useActiveNetworkConfig();
   const searchParams = useSearchParams();
+  const [origin, setOrigin] = useState("");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setOrigin(window.location.origin);
+  }, []);
 
   const parsedPayment = useMemo(() => {
     try {
@@ -32,27 +39,25 @@ function PayRouteInner() {
 
   const deepLink = useMemo(() => {
     if (!parsedPayment) return "";
-    const params = new URLSearchParams({ asset: String(parsedPayment.assetId) });
-    if (parsedPayment.amount) params.set("amount", decimalToBaseUnits(parsedPayment.amount, 6).toString());
-    if (parsedPayment.note) params.set("note", parsedPayment.note);
-    return `perawallet://${parsedPayment.to}?${params.toString()}`;
+    const amountBaseUnits = parsedPayment.amount ? decimalToBaseUnits(parsedPayment.amount, 6).toString() : undefined;
+    return buildPeraDeepLink({
+      address: parsedPayment.to,
+      assetId: parsedPayment.assetId,
+      amountBaseUnits,
+      note: parsedPayment.note,
+    });
   }, [parsedPayment]);
 
-  const androidIntentLink = useMemo(() => {
-    if (!parsedPayment) return "";
-    const params = new URLSearchParams({ asset: String(parsedPayment.assetId) });
-    if (parsedPayment.amount) params.set("amount", decimalToBaseUnits(parsedPayment.amount, 6).toString());
-    if (parsedPayment.note) params.set("note", parsedPayment.note);
-    const fallback = encodeURIComponent("https://play.google.com/store/apps/details?id=com.algorand.android");
-    return `intent://${parsedPayment.to}?${params.toString()}#Intent;scheme=perawallet;package=com.algorand.android;S.browser_fallback_url=${fallback};end`;
-  }, [parsedPayment]);
+  const canonicalRedirectLink = useMemo(() => {
+    if (!deepLink) return "";
+    const resolvedOrigin = origin || (typeof window !== "undefined" ? window.location.origin : undefined);
+    return buildPeraRedirectLink({ deepLink, origin: resolvedOrigin });
+  }, [deepLink, origin]);
 
-  const launchLink = useMemo(() => {
-    if (typeof navigator === "undefined") return deepLink;
-    const ua = navigator.userAgent;
-    const isAndroidChrome = /Android/i.test(ua) && /Chrome/i.test(ua) && !/EdgA|OPR|SamsungBrowser/i.test(ua);
-    return isAndroidChrome ? androidIntentLink : deepLink;
-  }, [androidIntentLink, deepLink]);
+  useEffect(() => {
+    if (!canonicalRedirectLink) return;
+    window.location.replace(canonicalRedirectLink);
+  }, [canonicalRedirectLink]);
 
   if (!parsedPayment) {
     return (
@@ -69,15 +74,13 @@ function PayRouteInner() {
     <AppShell>
       <Card className="space-y-3">
         <h1 className="text-xl font-bold">{t("pay.openWalletTitle")}</h1>
-        <p className="text-sm text-muted">{t("pay.openWalletSubtitle")}</p>
-        <a href={launchLink}>
+        <p className="text-sm text-muted">{t("pay.preparing")}</p>
+        <a href={canonicalRedirectLink || "#"}>
           <Button className="w-full">{t("pay.openInPera")}</Button>
         </a>
-        {launchLink !== deepLink ? (
-          <a href={deepLink}>
-            <Button className="w-full" variant="secondary">{t("pay.openDirectLink")}</Button>
-          </a>
-        ) : null}
+        <a href={deepLink || "#"}>
+          <Button className="w-full" variant="secondary">{t("pay.openDirectLink")}</Button>
+        </a>
         <p className="text-xs text-muted">{t("pay.installHint")}</p>
       </Card>
     </AppShell>

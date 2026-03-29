@@ -96,6 +96,8 @@ export function isPaymentRequestInput(value: string) {
   return trimmed.startsWith("Mix://")
     || trimmed.startsWith("/pay?")
     || trimmed.includes("/pay?")
+    || trimmed.startsWith("/connect/pera?")
+    || trimmed.includes("/connect/pera?")
     || trimmed.startsWith("pera://send?")
     || trimmed.startsWith("perawallet://")
     || trimmed.startsWith("algorand://")
