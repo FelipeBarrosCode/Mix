@@ -29,9 +29,9 @@ export default function CashInPage() {
         </Card>
 
         <Card className="space-y-3 text-sm">
-          <p className="text-base font-semibold">AI cash-in prompt</p>
+          <p className="text-base font-semibold">{t("cashIn.aiPromptTitle")}</p>
           <p className="text-muted">
-            Copy this prompt and use it in your preferred AI assistant to get a personalized cash-in guide.
+            {t("cashIn.aiPromptBody")}
           </p>
           <Textarea className="min-h-[28rem] font-mono text-xs leading-5" readOnly value={prompt} />
           <Button
@@ -39,11 +39,11 @@ export default function CashInPage() {
             variant="secondary"
             onClick={() => {
               navigator.clipboard.writeText(prompt)
-                .then(() => toast({ title: "Cash-in prompt copied" }))
+                .then(() => toast({ title: t("cashIn.aiPromptCopied") }))
                 .catch(() => undefined);
             }}
           >
-            Copy cash-in prompt
+            {t("cashIn.aiPromptCopy")}
           </Button>
         </Card>
       </div>

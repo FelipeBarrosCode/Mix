@@ -539,6 +539,10 @@ export const messages: Partial<Record<AppLocale, Record<string, string>>> & { en
     "cashIn.steps.6": "Confirm network before final submit: if unsure, stop and re-check before tapping Confirm.",
     "cashIn.steps.7": "Complete payment: approve bank/card payment and wait for Completed/Sent status.",
     "cashIn.steps.8": "Verify in Pera: confirm USDCa balance updated.",
+    "cashIn.aiPromptTitle": "AI cash-in prompt",
+    "cashIn.aiPromptBody": "Copy this prompt and use it in your preferred AI assistant to get a personalized cash-in guide.",
+    "cashIn.aiPromptCopy": "Copy cash-in prompt",
+    "cashIn.aiPromptCopied": "Cash-in prompt copied",
 
     "cashOut.title": "Cash out",
     "cashOut.subtitle": "Custodial flow to cash out from Pera Wallet.",
@@ -586,7 +590,11 @@ export const messages: Partial<Record<AppLocale, Record<string, string>>> & { en
     "cashOut.steps.6": "Wait provider credit from Pending to Available.",
     "cashOut.steps.7": "Sell to fiat and confirm quote/fees.",
     "cashOut.steps.8": "Withdraw to bank/card payout account.",
-    "cashOut.steps.9": "Confirm payout and save receipts."
+    "cashOut.steps.9": "Confirm payout and save receipts.",
+    "cashOut.aiPromptTitle": "AI cash-out prompt",
+    "cashOut.aiPromptBody": "Copy this prompt and use it in your preferred AI assistant to get a personalized cash-out guide.",
+    "cashOut.aiPromptCopy": "Copy cash-out prompt",
+    "cashOut.aiPromptCopied": "Cash-out prompt copied"
   },
   "pt-BR": {
     "common.unknownError": "Erro desconhecido",
@@ -1126,6 +1134,10 @@ export const messages: Partial<Record<AppLocale, Record<string, string>>> & { en
     "cashIn.steps.6": "Confirme a rede antes de enviar.",
     "cashIn.steps.7": "Conclua o pagamento e aguarde status Concluído/Enviado.",
     "cashIn.steps.8": "Verifique na Pera se o saldo de USDCa foi atualizado.",
+    "cashIn.aiPromptTitle": "Prompt de IA para adicionar saldo",
+    "cashIn.aiPromptBody": "Copie este prompt e use no assistente de IA da sua preferencia para gerar um guia personalizado de entrada.",
+    "cashIn.aiPromptCopy": "Copiar prompt de entrada",
+    "cashIn.aiPromptCopied": "Prompt de entrada copiado",
 
     "cashOut.title": "Sacar",
     "cashOut.subtitle": "Fluxo custodial para sacar da Pera Wallet.",
@@ -1173,7 +1185,11 @@ export const messages: Partial<Record<AppLocale, Record<string, string>>> & { en
     "cashOut.steps.6": "Aguarde o status passar de Pendente para Disponível.",
     "cashOut.steps.7": "Venda para fiat e confirme cotação/taxas.",
     "cashOut.steps.8": "Saque para conta bancária/cartão.",
-    "cashOut.steps.9": "Confirme o recebimento e guarde comprovantes."
+    "cashOut.steps.9": "Confirme o recebimento e guarde comprovantes.",
+    "cashOut.aiPromptTitle": "Prompt de IA para saque",
+    "cashOut.aiPromptBody": "Copie este prompt e use no assistente de IA da sua preferencia para gerar um guia personalizado de saida.",
+    "cashOut.aiPromptCopy": "Copiar prompt de saque",
+    "cashOut.aiPromptCopied": "Prompt de saque copiado"
   },
   es: {
     "common.unknownError": "Error desconocido",
@@ -1713,6 +1729,10 @@ export const messages: Partial<Record<AppLocale, Record<string, string>>> & { en
     "cashIn.steps.6": "Confirma red antes de enviar.",
     "cashIn.steps.7": "Completa pago y espera estado Completado/Enviado.",
     "cashIn.steps.8": "Verifica en Pera el saldo de USDCa.",
+    "cashIn.aiPromptTitle": "Prompt de IA para ingreso",
+    "cashIn.aiPromptBody": "Copia este prompt y usalo en tu asistente de IA preferido para generar una guia personalizada de entrada.",
+    "cashIn.aiPromptCopy": "Copiar prompt de ingreso",
+    "cashIn.aiPromptCopied": "Prompt de ingreso copiado",
 
     "cashOut.title": "Retirar",
     "cashOut.subtitle": "Flujo custodial para retirar desde Pera Wallet.",
@@ -1760,6 +1780,10 @@ export const messages: Partial<Record<AppLocale, Record<string, string>>> & { en
     "cashOut.steps.6": "Espera estado de Pendiente a Disponible.",
     "cashOut.steps.7": "Vende a fiat y confirma cotización/comisiones.",
     "cashOut.steps.8": "Retira a banco/tarjeta.",
-    "cashOut.steps.9": "Confirma recepción y guarda comprobantes."
+    "cashOut.steps.9": "Confirma recepcion y guarda comprobantes.",
+    "cashOut.aiPromptTitle": "Prompt de IA para retiro",
+    "cashOut.aiPromptBody": "Copia este prompt y usalo en tu asistente de IA preferido para generar una guia personalizada de salida.",
+    "cashOut.aiPromptCopy": "Copiar prompt de retiro",
+    "cashOut.aiPromptCopied": "Prompt de retiro copiado"
   }
 };

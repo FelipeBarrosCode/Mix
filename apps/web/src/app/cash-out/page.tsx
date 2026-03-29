@@ -29,9 +29,9 @@ export default function CashOutPage() {
         </Card>
 
         <Card className="space-y-3 text-sm">
-          <p className="text-base font-semibold">AI cash-out prompt</p>
+          <p className="text-base font-semibold">{t("cashOut.aiPromptTitle")}</p>
           <p className="text-muted">
-            Copy this prompt and use it in your preferred AI assistant to get a personalized cash-out guide.
+            {t("cashOut.aiPromptBody")}
           </p>
           <Textarea className="min-h-[28rem] font-mono text-xs leading-5" readOnly value={prompt} />
           <Button
@@ -39,11 +39,11 @@ export default function CashOutPage() {
             variant="secondary"
             onClick={() => {
               navigator.clipboard.writeText(prompt)
-                .then(() => toast({ title: "Cash-out prompt copied" }))
+                .then(() => toast({ title: t("cashOut.aiPromptCopied") }))
                 .catch(() => undefined);
             }}
           >
-            Copy cash-out prompt
+            {t("cashOut.aiPromptCopy")}
           </Button>
         </Card>
       </div>
